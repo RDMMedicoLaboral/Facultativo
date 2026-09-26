@@ -74,10 +74,9 @@ details.card summary{margin:-2px 0 0}details.card[open] summary{margin-bottom:14
 <footer>Prototipo de demostración con datos ficticios. Una versión real debe cumplir la Ley 26.529 (historia clínica), la Ley 25.326 (protección de datos personales) y la Ley 27.553 (recetas electrónicas y teleasistencia).</footer>
 <script>
 const TD=["DNI","CI","Pasaporte","Libreta Cívica","Libreta de Enrolamiento"],TE=["Ecografía","Radiografía","Tomografía","Resonancia (RMN)","Laboratorio","Otro"],
-SIS=["General","Cardiovascular","Respiratorio","Digestivo","Neurológico","Musculoesquelético","Genitourinario","Piel"],
-VIT=[["ta","Tensión arterial"],["fc","Frec. cardíaca (lpm)"],["fr","Frec. resp. (rpm)"],["tm","Temp. (°C)"],["sat","Sat. O₂ (%)"],["pe","Peso (kg)"],["tl","Talla (cm)"]],
-TABS=[["hoy","Hoy"],["pac","Pacientes"],["tur","Turnos"],["hc","Historia clínica"],["cob","Coberturas"],["por","Reserva en línea"]],
-ESTADOS=["Pendiente","Atendido","Ausente","Cancelado"],FILES={};
+VIT=[["tas","TA sistólica (mmHg)"],["tad","TA diastólica (mmHg)"],["fc","Frec. cardíaca (lpm)"],["fr","Frec. resp. (rpm)"],["tm","Temperatura (°C)"],["pe","Peso (kg)"],["tl","Talla (m)"]],
+TABS=[["hoy","Hoy"],["pac","Pacientes"],["tur","Turnos"],["hc","Historia clínica"],["cob","Coberturas"],["equ","Equipo"],["caja","Caja"],["est","Estadísticas"],["perf","Mi consultorio"],["por","Reserva en línea"]],
+ESTADOS=["Pendiente","Atendido","Ausente","Cancelado"],CERT=["Reposo laboral","Aptitud física / deportiva","Asistencia a consulta","Constancia de atención","Otro"],FORMAS=["Efectivo","Transferencia","Tarjeta de débito","Tarjeta de crédito","Cobertura (a facturar)","Seña (Mercado Pago)"],TREC=["Receta simple","Receta repetitiva (tratamiento crónico)"],TCONS=["Procedimiento o tratamiento","Telemedicina","Tratamiento de datos personales (Ley 25.326)","Otro"],FILES={};
 const OSS=`601104|Asociacion Gualeguaychu de Obras Sociales|
 600309|Asociacion de Obras Sociales de Bella Vista|
 600408|Asociacion de Obras Sociales de Comodoro Rivadavia|
@@ -382,7 +381,7 @@ const OSS=`601104|Asociacion Gualeguaychu de Obras Sociales|
 100106|Obra Social para el Personal de la Industria Aceitera, Desmotadora y Afines|OSIAD
 126106|Obra Social para los Trabajadores de la Educacion Privada|OSTEP
 997001|Programa Federal Incluir Salud (Pfis)|PFIS`,fr=r=>r.replace(/^(\d)(\d{4})(\d)$/,"$1-$2-$3"),BASE=OSS.split("\n").map(l=>{const a=l.split("|");return{n:a[1],r:fr(a[0]),s:a[2]}});
-let cf="",S,tab="hoy",selPac="",filtro="",done=null;
+let cf="",S,tab="hoy",selPac="",filtro="",done=null,selPro="",selMes="";
 const ALL=()=>BASE.concat(S.cus),cobF=n=>ALL().find(c=>c.n.toLowerCase()==n.toLowerCase()),$=i=>document.getElementById(i),v=i=>$(i).value.trim(),r=n=>(document.querySelector(`input[name=${n}]:checked`)||{}).value,
 iso=d=>d.toISOString().slice(0,10),esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])),
 fdate=s=>s?s.split("-").reverse().join("/"):"",pac=id=>S.pac.find(p=>p.id==id),nom=p=>p?`${esc(p.ap)}, ${esc(p.no)}`:"(eliminado)",
@@ -391,31 +390,42 @@ docFmt=p=>p.td=="DNI"&&/^\d{7,8}$/.test(p.nd)?p.nd.replace(/\B(?=(\d{3})+(?!\d))
 docOk=(t,n)=>/^(CI|Pasaporte)$/.test(t)?/^[A-Za-z0-9]{6,12}$/.test(n):/^\d{7,8}$/.test(n),
 cobChip=p=>p.cob?`<span class="chip">${esc(p.cob)}</span>${p.plan?" Plan "+esc(p.plan):""}<br><small>${(cobF(p.cob)||{}).r?"RNOS "+cobF(p.cob).r+" · ":""}Afiliado ${esc(p.afi)}</small>`:`<span class="chip sol">Particular</span>`;
 function seed(){const h=iso(new Date());return{n:20,sin:{},
+pro:[{id:1,no:"Ana",ap:"Duarte",esp:"Clínica médica",mt:"MN",mn:"54321"},{id:2,no:"Martín",ap:"Sosa",esp:"Traumatología",mt:"MP",mn:"22110"}],cert:[],pag:[],cons:[],rec:[],fees:{"Particular":40000},
+info:{nombre:"Facultativo",dir:"Av. Corrientes 1234, CABA",hor:"Lun a vie de 9 a 18 h",tel:"+54 11 4000-0000"},
 cus:["OSDE","Swiss Medical","Galeno","Medifé","Sancor Salud","PAMI (INSSJP)","IOMA"].map(n=>({n,r:"",s:"Prepaga u otra"})),
 pac:[{id:1,no:"Lucía",ap:"Fernández",td:"DNI",nd:"30456789",sx:"Femenino",nac:"1985-03-14",tp:"+549",tn:"1155550142",em:"lucia@mail.com",cob:"OSDE",plan:"310",afi:"12345678901",ant:{}},
 {id:2,no:"Ricardo",ap:"Gómez",td:"DNI",nd:"18234567",sx:"Masculino",nac:"1962-09-02",tp:"+549",tn:"3515550177",em:"ricardo@mail.com",cob:"PAMI (INSSJP)",plan:"",afi:"15182345670",ant:{per:"Hipertensión arterial.",fam:"Padre con ACV.",rel:"Latigazo cervical con hernia C5-C6 posterolateral hace 10 años (accidente automovilístico). Sin cirugía; inmovilización 1 año."}},
 {id:3,no:"Camila",ap:"Ibarra",td:"Pasaporte",nd:"AB123456",sx:"Otro",nac:"2001-11-27",tp:"+598",tn:"9155501190",em:"camila@mail.com",cob:"",plan:"",afi:"",ant:{}}],
-tur:[{id:1,pid:1,f:h,h:"09:00",mo:"Control anual",mod:"Presencial",es:"Pendiente"},{id:2,pid:2,f:h,h:"09:30",mo:"Dolor cervical",mod:"Presencial",es:"Pendiente"},{id:3,pid:3,f:h,h:"10:15",mo:"Primera consulta",mod:"Telemedicina",sala:"Facultativo-demo3",es:"Pendiente"}],
+tur:[{id:1,pid:1,prid:1,f:h,h:"09:00",mo:"Control anual",mod:"Presencial",es:"Pendiente"},{id:2,pid:2,prid:2,f:h,h:"09:30",mo:"Dolor cervical",mod:"Presencial",es:"Pendiente"},{id:3,pid:3,prid:1,f:h,h:"10:15",mo:"Primera consulta",mod:"Telemedicina",sala:"Facultativo-demo3",es:"Pendiente"}],
 est:[{id:4,pid:2,tp:"Resonancia (RMN)",f:"2024-06-10",d:"Columna cervical",fn:"rmn-cervical-2024.pdf"}],evo:[]}}
-function load(){try{const x=localStorage.getItem("facultativo-v3");if(x)return JSON.parse(x)}catch(e){}return seed()}
+function load(){try{const x=localStorage.getItem("facultativo-v5");if(x)return JSON.parse(x)}catch(e){}return seed()}
 function save(){try{localStorage.setItem("facultativo-v2",JSON.stringify(S))}catch(e){}}
 S=load();
 const go=t=>{tab=t;draw()},openHc=id=>{selPac=id;go("hc")};
+function pro(id){return S.pro.find(x=>x.id==id)}
+function fee(n){const k=n||"Particular";return S.fees[k]!=null?S.fees[k]:0}
+function setFee(n,x){S.fees[n||"Particular"]=+x||0;save();draw()}
+function money(n){return "$ "+Number(n||0).toLocaleString("es-AR")}
+function hashCode(s){let h=0;for(let i=0;i<s.length;i++){h=(h<<5)-h+s.charCodeAt(i);h|=0}return Math.abs(h).toString(36).toUpperCase().padStart(8,"0").slice(0,8)}
+function nomPro(p){return p?`Dr./Dra. ${esc(p.no)} ${esc(p.ap)}`:"—"}
+function matr(p){return p?`${p.mt} ${p.mn}`:""}
+const proOpts=s=>S.pro.map(p=>`<option value="${p.id}"${p.id==s?" selected":""}>${nomPro(p)} · ${esc(p.esp)}</option>`).join("");
 function draw(){$("nav").innerHTML=TABS.map(t=>`<button class="${t[0]==tab?"on":""}" onclick="go('${t[0]}')">${t[1]}</button>`).join("");
-$("app").innerHTML=({hoy:vHoy,pac:vPac,tur:vTur,hc:vHc,cob:vCob,por:vPor})[tab]()}
+$("app").innerHTML=({hoy:vHoy,pac:vPac,tur:vTur,hc:vHc,cob:vCob,equ:vEqu,caja:vCaja,est:vEst,perf:vPerf,por:vPor})[tab]()}
 const pacOpts=s=>S.pac.map(p=>`<option value="${p.id}"${p.id==s?" selected":""}>${nom(p)} · ${esc(p.td)} ${docFmt(p)}</option>`).join(""),
 cobOpts=()=>S.cob.map(c=>`<option>${esc(c.n)}</option>`).join("");
 function estCount(pid){return S.est.filter(e=>e.pid==pid).length}
-function rowT(x,d){const p=pac(x.pid),n=p?estCount(p.id):0;
-return `<tr>${d?`<td>${fdate(x.f)}</td>`:""}<td>${x.h}</td><td>${p?`<button class="link" onclick="openHc(${p.id})">${nom(p)}</button><br><small class="dni">${esc(p.td)} ${docFmt(p)}</small>`:"—"}</td><td>${p?cobChip(p):""}</td>
-<td>${esc(x.mo)}<br>${x.mod=="Telemedicina"?`<span class="chip sol">Telemedicina</span> <a href="https://meet.jit.si/${esc(x.sala)}" target="_blank" rel="noopener">Videoconsulta</a>`:`<span class="chip">Presencial</span>`}</td>
+function rowT(x,d){const p=pac(x.pid),n=p?estCount(p.id):0,dr=pro(x.prid);
+return `<tr>${d?`<td>${fdate(x.f)}</td>`:""}<td>${x.h}</td><td>${p?`<button class="link" onclick="openHc(${p.id})">${nom(p)}</button><br><small class="dni">${esc(p.td)} ${docFmt(p)}</small>`:"—"}</td><td>${dr?nomPro(dr)+`<br><small>${esc(dr.esp)}</small>`:"—"}</td><td>${p?cobChip(p):""}</td>
+<td>${esc(x.mo)}<br>${x.mod=="Telemedicina"?`<span class="chip sol">Telemedicina</span> <a href="https://meet.jit.si/${esc(x.sala)}" target="_blank" rel="noopener">Videoconsulta</a>`:`<span class="chip">Presencial</span>`}${x.senaMonto?`<br><span class="chip">Seña ${money(x.senaMonto)}</span>`:""}</td>
 <td>${n?`${n} estudio${n>1?"s":""}`:S.sin[x.pid]?"<small>Sin estudios</small>":'<span class="warn">Faltan estudios</span>'}</td>
 <td><select aria-label="Estado" class="st-${x.es}" onchange="setEs(${x.id},this.value)">${ESTADOS.map(e=>`<option${e==x.es?" selected":""}>${e}</option>`).join("")}</select></td></tr>`}
-const HEAD=d=>`<tr>${d?"<th>Fecha</th>":""}<th>Hora</th><th>Paciente</th><th>Cobertura</th><th>Motivo y modalidad</th><th>Estudios previos</th><th>Estado</th></tr>`;
+const HEAD=d=>`<tr>${d?"<th>Fecha</th>":""}<th>Hora</th><th>Paciente</th><th>Profesional</th><th>Cobertura</th><th>Motivo y modalidad</th><th>Estudios previos</th><th>Estado</th></tr>`;
 function setEs(id,x){S.tur.find(t=>t.id==id).es=x;save();draw()}
-function vHoy(){const h=iso(new Date()),t=S.tur.filter(x=>x.f==h).sort((a,b)=>a.h<b.h?-1:1);
+function vHoy(){const h=iso(new Date());let t=S.tur.filter(x=>x.f==h).sort((a,b)=>a.h<b.h?-1:1);if(selPro)t=t.filter(x=>x.prid==selPro);
 return `<div class="stats"><div><b>${t.length}</b><span>turnos hoy</span></div><div><b>${t.filter(x=>x.mod=="Telemedicina").length}</b><span>telemedicina</span></div><div><b>${t.filter(x=>x.es=="Atendido").length}</b><span>atendidos</span></div><div><b>${S.pac.length}</b><span>pacientes</span></div></div>
-<h2>Agenda de hoy · ${fdate(h)}</h2><div class="card tw">${t.length?`<table>${HEAD()}${t.map(x=>rowT(x)).join("")}</table>`:'<div class="empty">No hay turnos para hoy.</div>'}</div>`}
+<h2>Agenda de hoy · ${fdate(h)}</h2><div class="card"><label>Profesional<select onchange="selPro=this.value;draw()"><option value="">Todos</option>${proOpts(selPro)}</select></label></div>
+<div class="card tw">${t.length?`<table>${HEAD()}${t.map(x=>rowT(x)).join("")}</table>`:'<div class="empty">No hay turnos para hoy con ese filtro.</div>'}</div>`}
 function pacFields(){return `<p class="req">Los campos con <b>*</b> son obligatorios.</p><div class="row">
 <label>Nombre *<input id="no" autocomplete="off"></label><label>Apellido *<input id="ap" autocomplete="off"></label>
 <label>Tipo de documento *<select id="td">${TD.map(t=>`<option>${t}</option>`).join("")}</select></label><label>Nro. de documento *<input id="nd" autocomplete="off" placeholder="Sin puntos"></label>
@@ -443,15 +453,16 @@ function vPac(){const q=filtro.toLowerCase().replace(/\./g,""),l=S.pac.filter(p=
 return `<h2>Pacientes</h2><details class="card"><summary>Nuevo paciente</summary>${pacFields()}<p class="err" id="err"></p><button class="btn" onclick="addPac()">Añadir paciente</button></details>
 <div class="card"><label>Buscar por nro. de documento o apellido<input id="q" value="${esc(filtro)}" oninput="filtro=this.value;draw();const i=$('q');i.focus();i.setSelectionRange(99,99)"></label></div>
 <div class="card tw">${l.length?`<table><tr><th>Documento</th><th>Paciente</th><th>Edad</th><th>Cobertura</th><th>Celular</th><th></th></tr>${l.map(p=>`<tr><td class="dni">${esc(p.td)}<br>${docFmt(p)}</td><td>${nom(p)}<br><small>${esc(p.sx)}</small></td><td>${edad(p.nac)}</td><td>${cobChip(p)}</td><td>${esc(p.tp)} ${esc(p.tn)}<br><small>${esc(p.em)}</small></td><td><button class="link" onclick="openHc(${p.id})">Historia</button></td></tr>`).join("")}</table>`:'<div class="empty">Sin resultados.</div>'}</div>`}
-function turFields(){const t=new Date();t.setDate(t.getDate()+1);return `<label>Fecha<input id="tf" type="date" value="${iso(t)}"></label><label>Hora<input id="th" type="time" value="09:00"></label>
+function turFields(){const t=new Date();t.setDate(t.getDate()+1);return `<label style="flex-basis:220px">Profesional<select id="trp">${proOpts()}</select></label><label>Fecha<input id="tf" type="date" value="${iso(t)}"></label><label>Hora<input id="th" type="time" value="09:00"></label>
 <label>Modalidad<select id="tm"><option>Presencial</option><option>Telemedicina</option></select></label><label style="flex-basis:220px">Motivo<input id="tmo"></label>`}
 function mkTur(pid){if(!v("tf")||!v("th"))return err("Elegí fecha y hora.");
 if(S.tur.some(x=>x.f==v("tf")&&x.h==v("th")&&x.es!="Cancelado"))return err("Ya hay un turno en ese horario. Elegí otro.");
-const id=S.n++,t={id,pid,f:v("tf"),h:v("th"),mo:v("tmo")||"Consulta",mod:v("tm"),es:"Pendiente"};if(t.mod=="Telemedicina")t.sala="Facultativo-"+id+Math.random().toString(36).slice(2,7);S.tur.push(t);save();return t}
+const id=S.n++,t={id,pid,prid:+v("trp"),f:v("tf"),h:v("th"),mo:v("tmo")||"Consulta",mod:v("tm"),es:"Pendiente"};if(t.mod=="Telemedicina")t.sala="Facultativo-"+id+Math.random().toString(36).slice(2,7);S.tur.push(t);save();return t}
 function addTur(){const t=mkTur(+v("tp_"));if(t)draw()}
-function vTur(){const l=[...S.tur].sort((a,b)=>a.f+a.h<b.f+b.h?-1:1);
+function vTur(){let l=[...S.tur].sort((a,b)=>a.f+a.h<b.f+b.h?-1:1);if(selPro)l=l.filter(x=>x.prid==selPro);
 return `<h2>Turnos</h2>${S.pac.length?`<div class="card"><div class="row"><label style="flex-basis:260px">Paciente<select id="tp_">${pacOpts()}</select></label>${turFields()}<button class="btn" onclick="addTur()">Dar turno</button></div><p class="err" id="err"></p></div>`:'<div class="card empty">Primero cargá un paciente.</div>'}
-<div class="card tw">${l.length?`<table>${HEAD(1)}${l.map(x=>rowT(x,1)).join("")}</table>`:'<div class="empty">Todavía no hay turnos.</div>'}</div>`}
+<div class="card"><label>Filtrar por profesional<select onchange="selPro=this.value;draw()"><option value="">Todos</option>${proOpts(selPro)}</select></label></div>
+<div class="card tw">${l.length?`<table>${HEAD(1)}${l.map(x=>rowT(x,1)).join("")}</table>`:'<div class="empty">Todavía no hay turnos con ese filtro.</div>'}</div>`}
 function estList(pid){const l=S.est.filter(e=>e.pid==pid).sort((a,b)=>a.f<b.f?1:-1);
 return l.length?`<div class="tw"><table><tr><th>Fecha</th><th>Tipo</th><th>Descripción</th><th>Archivo</th></tr>${l.map(e=>`<tr><td>${fdate(e.f)}</td><td>${esc(e.tp)}</td><td>${esc(e.d)}</td><td>${FILES[e.id]?`<a href="${FILES[e.id]}" target="_blank" rel="noopener">${esc(e.fn)}</a>`:`<small>${esc(e.fn)}</small>`}</td></tr>`).join("")}</table></div>`:'<div class="empty">Sin estudios cargados.</div>'}
 function estBlock(pid){return `<div class="row"><label>Tipo de estudio<select id="et">${TE.map(t=>`<option>${t}</option>`).join("")}</select></label><label>Fecha del estudio<input id="ef" type="date" max="${iso(new Date())}"></label>
@@ -465,33 +476,154 @@ return `<h2>Historia clínica</h2><div class="card"><label>Paciente<select oncha
 <details class="card" open><summary>Antecedentes</summary><label>Personales<textarea id="a1">${esc(a.per)}</textarea></label><label style="margin-top:10px">Familiares<textarea id="a2">${esc(a.fam)}</textarea></label>
 <label style="margin-top:10px">Relacionados con la enfermedad actual<textarea id="a3" placeholder="Ej: latigazo cervical con hernia C5-C6 posterolateral hace 10 años; sin cirugía, inmovilización 1 año">${esc(a.rel)}</textarea></label><button class="btn g" style="margin-top:10px" onclick="saveAnt()">Guardar antecedentes</button></details>
 <details class="card" open><summary>Estudios previos (${estCount(p.id)})</summary>${estBlock(p.id)}</details>
-<details class="card"><summary>Nueva consulta</summary><label>Motivo de consulta<input id="c_mo"></label><h3>Signos vitales</h3><div class="row">${VIT.map(k=>`<label style="flex-basis:120px">${k[1]}<input id="v_${k[0]}"></label>`).join("")}</div>
-<h3>Síntomas referidos por sistema</h3><div class="row">${SIS.map((s,i)=>`<label style="flex-basis:200px">${s}<input id="s_${i}"></label>`).join("")}</div>
-<label style="margin-top:10px">Examen físico<textarea id="c_ex"></textarea></label><h3>Diagnóstico</h3><div class="row"><label style="flex:0 1 120px">CIE-10<input id="c_cie" placeholder="M50.1"></label><label style="flex-basis:240px">Descripción<input id="c_dd"></label>
-<label>Tipo de Dx<select id="c_tdx"><option>Presuntivo</option><option>Definitivo</option><option>Diferencial</option></select></label></div>
-<label style="margin-top:10px">Evaluación diagnóstica<textarea id="c_ev"></textarea></label><label style="margin-top:10px">Tratamiento e indicaciones (medicación, ejercicios, kinesiología)<textarea id="c_tt"></textarea></label>
+<details class="card"><summary>Nueva consulta</summary>
+<label>Motivo de consulta<textarea id="c_mo"></textarea></label>
+<label style="margin-top:10px">Evolución<textarea id="c_evo"></textarea></label>
+<label style="margin-top:10px">Examen físico<textarea id="c_ex"></textarea></label>
+<h3>Signos vitales</h3><fieldset><legend>¿Se registran signos vitales?</legend>
+<label class="rad"><input type="radio" name="vsi" value="si" onchange="vsiT()">Sí</label>
+<label class="rad"><input type="radio" name="vsi" value="no" checked onchange="vsiT()">No</label></fieldset>
+<div class="row" id="vsi_box" hidden style="margin-top:10px">${VIT.map(k=>`<label style="flex-basis:130px">${k[1]}<input id="v_${k[0]}"></label>`).join("")}</div>
+<label style="margin-top:10px">Estudios complementarios<textarea id="c_ec" placeholder="Estudios que trae el paciente de afuera: ecografías, laboratorio, radiografías…"></textarea></label>
+<h3>Diagnóstico principal</h3><div class="row"><label>Tipo de Dx<select id="c_tdx"><option>Presuntivo</option><option>Definitivo</option></select></label>
+<label style="flex:0 1 120px">CIE-10<input id="c_cie" placeholder="M50.1"></label><label style="flex-basis:220px">Descripción (CIE-10)<input id="c_dd"></label></div>
+<label style="margin-top:10px">Si no está en el CIE-10, escribilo acá<textarea id="c_dxl" placeholder="Ej: Síndrome miofascial / Pubalgia / Síndrome facetario / Síndrome de columna fallida"></textarea></label>
+<label style="margin-top:10px">Otros diagnósticos<textarea id="c_ot"></textarea></label>
+<label style="margin-top:10px">Problemas activos y plan de seguimiento<textarea id="c_pl"></textarea></label>
+<label style="margin-top:10px">Tratamiento farmacológico e indicaciones<textarea id="c_tt"></textarea></label>
+<label style="margin-top:10px">Próxima cita<input id="c_px" placeholder="Ej: Control en 30 días, o una fecha"></label>
 <p class="err" id="err"></p><button class="btn" onclick="addCons()">Guardar consulta</button></details>
+<details class="card"><summary>Certificados médicos</summary><div class="row">
+<label style="flex-basis:220px">Tipo<select id="ce_tp" onchange="ceT()">${CERT.map(t=>`<option>${t}</option>`).join("")}</select></label>
+<label id="ce_dl" style="flex-basis:110px">Días de reposo<input id="ce_di" type="number" min="1" value="3"></label>
+<label style="flex-basis:220px">Profesional emisor<select id="ce_pr">${proOpts()}</select></label></div>
+<label style="margin-top:10px">Texto adicional (opcional)<textarea id="ce_tx"></textarea></label>
+<p class="err" id="err3"></p><button class="btn g" style="margin-top:8px" onclick="addCert(${p.id})">Generar certificado</button>
+${certList(p.id)}</details>
+<details class="card"><summary>Consentimientos informados</summary><div class="row">
+<label style="flex-basis:220px">Tipo<select id="co_tp">${TCONS.map(t=>`<option>${t}</option>`).join("")}</select></label>
+<label style="flex-basis:220px">Profesional que informa<select id="co_pr">${proOpts()}</select></label></div>
+<label style="margin-top:10px">Detalle (procedimiento, riesgos, alternativas)<textarea id="co_tx" placeholder="Describí el procedimiento o tratamiento, sus riesgos y alternativas"></textarea></label>
+<label class="rad" style="margin-top:10px"><input type="checkbox" id="co_ck">El/la paciente fue informado/a y acepta</label>
+<label style="margin-top:8px">Firma del paciente (nombre y apellido)<input id="co_fi" placeholder="${nom(p).replace(/<[^>]+>/g,"")}"></label>
+<p class="err" id="err4"></p><button class="btn g" style="margin-top:8px" onclick="addCons_(${p.id})">Guardar consentimiento</button>
+${consList(p.id)}</details>
+<details class="card"><summary>Recetas electrónicas</summary><div class="row">
+<label style="flex-basis:200px">Tipo<select id="rc_tp">${TREC.map(t=>`<option>${t}</option>`).join("")}</select></label>
+<label style="flex-basis:220px">Profesional prescriptor<select id="rc_pr">${proOpts()}</select></label></div>
+<div class="row" style="margin-top:10px"><label style="flex-basis:240px">Medicamento y presentación *<input id="rc_me" placeholder="Ibuprofeno 600 mg comprimidos"></label>
+<label style="flex-basis:160px">Cantidad *<input id="rc_ca" placeholder="1 caja x 20"></label><label style="flex-basis:200px">Dosis / posología *<input id="rc_do" placeholder="1 c/8 h por 5 días"></label></div>
+<label style="margin-top:10px">Indicaciones adicionales<textarea id="rc_in"></textarea></label>
+<p class="err" id="err5"></p><button class="btn g" style="margin-top:8px" onclick="addRec(${p.id})">Emitir receta</button>
+<p class="mut" style="margin-top:8px">La firma electrónica que genera esta receta es un código de verificación interno del prototipo, no una firma digital con validez legal. Para que tenga validez ante farmacias según la Ley 27.553, hace falta emitirla con un certificado digital de un prestador habilitado.</p>
+${recList(p.id)}</details>
 <div class="card"><h3 style="margin-top:0">Consultas anteriores</h3>${ev.length?ev.map(evoHtml).join(""):'<div class="empty">Sin consultas registradas.</div>'}</div>`}
-function evoHtml(e){const vi=VIT.filter(k=>e.vit[k[0]]).map(k=>`${k[1].split(" (")[0]}: ${esc(e.vit[k[0]])}`),pe=+e.vit.pe,tl=+e.vit.tl;if(pe&&tl)vi.push("IMC: "+(pe/(tl/100)**2).toFixed(1));
-const sy=SIS.map((s,i)=>e.sis[i]?`${s}: ${esc(e.sis[i])}`:"").filter(Boolean);
-return `<div class="evo"><small>${fdate(e.f)}</small> <b>${esc(e.mo)}</b>${vi.length?`<br><small>${vi.join(" · ")}</small>`:""}${sy.length?`<br>${sy.join("<br>")}`:""}${e.ex?`<br><b>Examen:</b> ${esc(e.ex)}`:""}
-<br><b>Dx (${esc(e.tdx)}):</b> ${esc(e.cie)} ${esc(e.dd)}${e.ev?`<br><b>Evaluación:</b> ${esc(e.ev)}`:""}${e.tt?`<br><b>Tratamiento:</b> ${esc(e.tt).replace(/\n/g,"<br>")}`:""}</div>`}
+function evoHtml(e){const vi=VIT.filter(k=>e.vit&&e.vit[k[0]]).map(k=>`${k[1].split(" (")[0]}: ${esc(e.vit[k[0]])}`),pe=e.vit&&+e.vit.pe,tl=e.vit&&+e.vit.tl;if(pe&&tl)vi.push("IMC: "+(pe/(tl*tl)).toFixed(1));
+return `<div class="evo"><small>${fdate(e.f)}</small> <b>${esc(e.mo)}</b>${e.evo?`<br><b>Evolución:</b> ${esc(e.evo)}`:""}${e.ex?`<br><b>Examen físico:</b> ${esc(e.ex)}`:""}${vi.length?`<br><b>Signos vitales:</b> ${vi.join(" · ")}`:""}${e.ec?`<br><b>Estudios complementarios:</b> ${esc(e.ec)}`:""}
+<br><b>Dx principal (${esc(e.tdx)}):</b> ${e.cie?esc(e.cie)+" — ":""}${esc(e.dd)}${e.dxl?`<br><b>Dx (sin CIE-10):</b> ${esc(e.dxl)}`:""}${e.ot?`<br><b>Otros diagnósticos:</b> ${esc(e.ot)}`:""}${e.pl?`<br><b>Problemas activos y plan:</b> ${esc(e.pl)}`:""}${e.tt?`<br><b>Tratamiento:</b> ${esc(e.tt).replace(/\n/g,"<br>")}`:""}${e.px?`<br><b>Próxima cita:</b> ${esc(e.px)}`:""}</div>`}
 function saveAnt(){const p=pac(selPac);p.ant={per:v("a1"),fam:v("a2"),rel:v("a3")};save();draw()}
-function addCons(){if(!v("c_mo")&&!v("c_dd"))return err("Completá al menos el motivo o el diagnóstico.");
-const vit={},sis={};VIT.forEach(k=>vit[k[0]]=v("v_"+k[0]));SIS.forEach((s,i)=>sis[i]=v("s_"+i));
-S.evo.push({id:S.n++,pid:+selPac,f:iso(new Date()),mo:v("c_mo")||"Consulta",vit,sis,ex:v("c_ex"),cie:v("c_cie"),dd:v("c_dd"),tdx:v("c_tdx"),ev:v("c_ev"),tt:v("c_tt")});save();draw()}
+function ceT(){$("ce_dl").hidden=v("ce_tp")!="Reposo laboral"}
+function certBody(c,p){const n=nom(p),d=`${esc(p.td)} ${docFmt(p)}`;
+if(c.tipo=="Reposo laboral")return `Certifico que ${n} (${d}) se encuentra bajo mi atención médica y requiere reposo por ${c.dias||"—"} día(s) a partir de la fecha.${c.tx?" "+esc(c.tx):""}`;
+if(c.tipo=="Aptitud física / deportiva")return `Certifico que ${n} (${d}) fue evaluado/a clínicamente y se encuentra en condiciones de aptitud física para la práctica de actividad física y/o deportiva.${c.tx?" "+esc(c.tx):""}`;
+if(c.tipo=="Asistencia a consulta")return `Certifico que ${n} (${d}) asistió a consulta médica en el día de la fecha.${c.tx?" "+esc(c.tx):""}`;
+if(c.tipo=="Constancia de atención")return `Certifico que ${n} (${d}) se encuentra bajo tratamiento y atención médica.${c.tx?" "+esc(c.tx):""}`;
+return esc(c.tx)||"—"}
+function certList(pid){const l=S.cert.filter(c=>c.pid==pid).sort((a,b)=>a.f<b.f?1:-1);
+return l.length?l.map(c=>`<div class="evo"><small>${fdate(c.f)} · ${esc(matr(pro(c.prid)))}</small><br><b>${esc(c.tipo)}</b><br>${certBody(c,pac(pid))}<br><button class="link" style="margin-top:6px" onclick="printCert(${c.id})">Imprimir</button></div>`).join(""):'<div class="empty">Sin certificados emitidos.</div>'}
+function addCert(pid){if(!S.pro.length)return $("err3").textContent="Cargá al menos un profesional en la pestaña Equipo.";
+const tipo=v("ce_tp"),dias=v("ce_di");if(tipo=="Reposo laboral"&&(!dias||+dias<1)){$("err3").textContent="Indicá los días de reposo.";return}
+S.cert.push({id:S.n++,pid,prid:+v("ce_pr"),f:iso(new Date()),tipo,dias,tx:v("ce_tx")});save();draw()}
+function printCert(id){const c=S.cert.find(x=>x.id==id),p=pac(c.pid),dr=pro(c.prid),w=window.open("","_blank");
+w.document.write(`<!DOCTYPE html><html lang="es-AR"><head><meta charset="utf-8"><title>Certificado médico</title>
+<style>body{font-family:Georgia,serif;max-width:640px;margin:40px auto;color:#14293D;line-height:1.7}
+h1{font-size:20px;border-bottom:2px solid #14293D;padding-bottom:10px}.h{color:#5B6E80;font-size:13px}
+.b{margin:26px 0;font-size:16px}.f{margin-top:60px}.f div{border-top:1px solid #14293D;width:240px;padding-top:6px;font-size:13px}
+button{font:600 14px sans-serif;padding:8px 16px;margin-top:30px;cursor:pointer}</style></head><body>
+<h1>Facultativo · Certificado médico</h1><p class="h">${esc(c.tipo)} · ${fdate(c.f)}</p>
+<p class="b">${certBody(c,p)}</p><p>Se extiende el presente a pedido del interesado, para los fines que estime corresponder.</p>
+<div class="f"><div>${esc(nomPro(dr))}<br>${esc(matr(dr))} · ${esc(dr?dr.esp:"")}</div></div>
+<button onclick="window.print()">Imprimir</button></body></html>`);w.document.close()}
+function consList(pid){const l=S.cons.filter(c=>c.pid==pid).sort((a,b)=>a.f<b.f?1:-1);
+return l.length?l.map(c=>`<div class="evo"><small>${fdate(c.f)} · ${esc(nomPro(pro(c.prid)))}</small><br><b>${esc(c.tipo)}</b>${c.tx?`<br>${esc(c.tx)}`:""}<br><span class="chip">Firmado por ${esc(c.firma)}</span></div>`).join(""):'<div class="empty">Sin consentimientos registrados.</div>'}
+function addCons_(pid){if(!v("co_tx"))return $("err4").textContent="Describí el procedimiento o tratamiento.";
+if(!$("co_ck").checked)return $("err4").textContent="Marcá que el paciente fue informado y acepta.";
+if(!v("co_fi"))return $("err4").textContent="Falta la firma (nombre y apellido) del paciente.";
+S.cons.push({id:S.n++,pid,prid:+v("co_pr"),f:iso(new Date()),tipo:v("co_tp"),tx:v("co_tx"),firma:v("co_fi")});save();draw()}
+function recList(pid){const l=S.rec.filter(c=>c.pid==pid).sort((a,b)=>a.f<b.f?1:-1);
+return l.length?l.map(c=>`<div class="evo"><small>${fdate(c.f)} · ${esc(nomPro(pro(c.prid)))} · ${esc(matr(pro(c.prid)))}</small><br><b>${esc(c.me)}</b> — ${esc(c.ca)}<br>${esc(c.do)}${c.in?`<br>${esc(c.in)}`:""}<br><span class="chip sol">Código ${c.cod}</span> <button class="link" style="margin-left:8px" onclick="printRec(${c.id})">Imprimir</button></div>`).join(""):'<div class="empty">Sin recetas emitidas.</div>'}
+function addRec(pid){if(!v("rc_me")||!v("rc_ca")||!v("rc_do"))return $("err5").textContent="Completá medicamento, cantidad y dosis.";
+const id=S.n++,f=iso(new Date()),cod=hashCode(pid+v("rc_me")+f+id);
+S.rec.push({id,pid,prid:+v("rc_pr"),f,tipo:v("rc_tp"),me:v("rc_me"),ca:v("rc_ca"),do:v("rc_do"),in:v("rc_in"),cod});save();draw()}
+function printRec(id){const c=S.rec.find(x=>x.id==id),p=pac(c.pid),dr=pro(c.prid),w=window.open("","_blank");
+w.document.write(`<!DOCTYPE html><html lang="es-AR"><head><meta charset="utf-8"><title>Receta electrónica</title>
+<style>body{font-family:Georgia,serif;max-width:640px;margin:40px auto;color:#14293D;line-height:1.7}
+h1{font-size:20px;border-bottom:2px solid #14293D;padding-bottom:10px}.h{color:#5B6E80;font-size:13px}
+.b{margin:22px 0;font-size:16px}.f{margin-top:50px}.f div{border-top:1px solid #14293D;width:260px;padding-top:6px;font-size:13px}
+.cod{font-family:monospace;background:#F3F7FA;padding:4px 8px;border-radius:4px}
+.warn{font-size:12px;color:#8A6416;margin-top:30px}button{font:600 14px sans-serif;padding:8px 16px;margin-top:20px;cursor:pointer}</style></head><body>
+<h1>Facultativo · ${esc(c.tipo)}</h1><p class="h">${fdate(c.f)} · Paciente: ${nom(p)} · ${esc(p.td)} ${docFmt(p)}</p>
+<p class="b"><b>${esc(c.me)}</b><br>Cantidad: ${esc(c.ca)}<br>Dosis: ${esc(c.do)}${c.in?`<br>Indicaciones: ${esc(c.in)}`:""}</p>
+<p>Código de verificación: <span class="cod">${c.cod}</span></p>
+<div class="f"><div>${esc(nomPro(dr))}<br>${esc(matr(dr))} · ${esc(dr?dr.esp:"")}</div></div>
+<p class="warn">Documento generado por un prototipo. No constituye una receta con firma digital válida ante farmacias (Ley 27.553).</p>
+<button onclick="window.print()">Imprimir</button></body></html>`);w.document.close()}
+function vEqu(){return `<h2>Equipo</h2><details class="card"><summary>Nuevo profesional</summary><div class="row">
+<label>Nombre *<input id="pn"></label><label>Apellido *<input id="pa"></label><label style="flex-basis:200px">Especialidad *<input id="pe" placeholder="Clínica médica, Traumatología…"></label>
+<label style="flex:0 1 110px">Matrícula *<select id="pmt"><option>MN</option><option>MP</option></select></label><label>Nro. de matrícula *<input id="pmn" inputmode="numeric"></label></div>
+<p class="err" id="err"></p><button class="btn" onclick="addPro()">Añadir profesional</button></details>
+<div class="card tw">${S.pro.length?`<table><tr><th>Profesional</th><th>Especialidad</th><th>Matrícula</th><th>Turnos</th></tr>${S.pro.map(p=>`<tr><td><b>${nomPro(p)}</b></td><td>${esc(p.esp)}</td><td class="dni">${esc(matr(p))}</td><td>${S.tur.filter(t=>t.prid==p.id).length}</td></tr>`).join("")}</table>`:'<div class="empty">Todavía no hay profesionales cargados.</div>'}</div>`}
+function addPro(){if(!v("pn")||!v("pa"))return err("Completá nombre y apellido.");if(!v("pe"))return err("Completá la especialidad.");if(!/^\d{3,7}$/.test(v("pmn")))return err("La matrícula debe tener solo números.");
+S.pro.push({id:S.n++,no:v("pn"),ap:v("pa"),esp:v("pe"),mt:v("pmt"),mn:v("pmn")});save();draw()}
+function vsiT(){$("vsi_box").hidden=r("vsi")!="si"}
+function addCons(){if(!v("c_mo")&&!v("c_dd")&&!v("c_dxl"))return err("Completá al menos el motivo o el diagnóstico.");
+const vit={};if(r("vsi")=="si")VIT.forEach(k=>vit[k[0]]=v("v_"+k[0]));
+S.evo.push({id:S.n++,pid:+selPac,f:iso(new Date()),mo:v("c_mo")||"Consulta",evo:v("c_evo"),ex:v("c_ex"),vit,ec:v("c_ec"),cie:v("c_cie"),dd:v("c_dd"),tdx:v("c_tdx"),dxl:v("c_dxl"),ot:v("c_ot"),pl:v("c_pl"),tt:v("c_tt"),px:v("c_px")});save();draw()}
 function vCob(){const q=cf.toLowerCase(),l=ALL().filter(c=>!q||`${c.n} ${c.s} ${c.r}`.toLowerCase().includes(q));
 return `<h2>Obras sociales y prepagas</h2><div class="card"><div class="row"><label>Nombre<input id="cn"></label><label>Código RNOS (opcional)<input id="cr" placeholder="1-2570-7"></label><button class="btn" onclick="addCob()">Agregar cobertura</button></div><p class="err" id="err"></p><small class="mut">Si un seguro nuevo no figura en la base, agregalo acá.</small></div>
 <div class="card"><label>Buscar por nombre, sigla o RNOS<input id="cq" value="${esc(cf)}" oninput="cf=this.value;draw();const i=$('cq');i.focus();i.setSelectionRange(99,99)"></label></div>
-<div class="card tw"><table><tr><th>RNOS</th><th>Entidad</th><th>Pacientes</th></tr>${l.slice(0,150).map(c=>`<tr><td class="dni">${c.r||"—"}</td><td><b>${esc(c.n)}</b>${c.s?` <small>${esc(c.s)}</small>`:""}</td><td>${S.pac.filter(p=>p.cob==c.n).length}</td></tr>`).join("")}</table>${l.length>150?`<p class="mut">Mostrando 150 de ${l.length}. Usá el buscador.</p>`:""}</div>
+<div class="card"><div class="row"><label style="flex-basis:220px">Valor de consulta particular<input type="number" min="0" step="500" value="${fee()}" onchange="setFee('',this.value)"></label></div><small class="mut">Se usa cuando el paciente no tiene cobertura.</small></div>
+<div class="card tw"><table><tr><th>RNOS</th><th>Entidad</th><th>Pacientes</th><th>Coseguro / valor consulta</th></tr>${l.slice(0,150).map(c=>`<tr><td class="dni">${c.r||"—"}</td><td><b>${esc(c.n)}</b>${c.s?` <small>${esc(c.s)}</small>`:""}</td><td>${S.pac.filter(p=>p.cob==c.n).length}</td><td><input type="number" min="0" step="500" style="max-width:130px" value="${fee(c.n)}" onchange="setFee('${esc(c.n).replace(/'/g,"\\'")}',this.value)"></td></tr>`).join("")}</table>${l.length>150?`<p class="mut">Mostrando 150 de ${l.length}. Usá el buscador.</p>`:""}</div>
 <p class="mut">Base: ${BASE.length} obras sociales del registro de la SSSalud, indexadas por código RNOS. Prepagas y seguros nuevos se agregan a mano.</p>`}
 function addCob(){const n=v("cn"),c=v("cr");if(!n)return err("Escribí el nombre de la cobertura.");if(c&&!/^\d-?\d{4}-?\d$/.test(c))return err("El RNOS debe verse así: 1-2570-7.");if(cobF(n))return err("Esa cobertura ya está en la lista.");S.cus.push({n,r:c?fr(c.replace(/-/g,"")):"",s:"Agregada"});save();draw()}
-function vPor(){if(done){const p=pac(done.pid),t=S.tur.find(x=>x.id==done.tid);
-return `<h2>Reserva en línea</h2><div class="card"><b>Turno reservado</b><p>${nom(p)} · ${fdate(t.f)} a las ${t.h} · ${t.mod}${t.mod=="Telemedicina"?` · <a href="https://meet.jit.si/${esc(t.sala)}" target="_blank" rel="noopener">Sala de videoconsulta</a>`:""}</p></div>
+function vPor(){if(done){const p=pac(done.pid),t=S.tur.find(x=>x.id==done.tid),sug=Math.round(fee(p.cob)*.3/500)*500||5000;
+return `<h2>Reserva en línea</h2><div class="card"><b>Turno reservado</b><p>${nom(p)} · ${fdate(t.f)} a las ${t.h} · ${nomPro(pro(t.prid))} · ${t.mod}${t.mod=="Telemedicina"?` · <a href="https://meet.jit.si/${esc(t.sala)}" target="_blank" rel="noopener">Sala de videoconsulta</a>`:""}</p></div>
+<div class="card">${t.senaMonto?`<b>Seña pagada</b><p class="mut">${money(t.senaMonto)} vía Mercado Pago. Se descuenta del valor de la consulta.</p>`:`<h3 style="margin-top:0">Pagá una seña para confirmar el turno</h3><p class="mut">Los consultorios que piden seña reducen mucho el ausentismo. Se descuenta del valor de la consulta.</p>
+<div class="row"><label style="flex-basis:160px">Monto de la seña<input id="sn_m" type="number" min="0" step="500" value="${sug}"></label><button class="btn" style="align-self:end" onclick="pagarSena(${t.id})">Pagar con Mercado Pago</button></div>
+<p class="mut" style="margin-top:8px">En este prototipo el pago es simulado. Una versión real necesita el checkout de Mercado Pago con credenciales del consultorio.</p>`}</div>
 <div class="card"><h3 style="margin-top:0">Cargá tus estudios previos antes de la consulta</h3><p class="mut">Ecografías, radiografías, tomografías o resonancias, aunque tengan años. El profesional los compara con los nuevos.</p>${estBlock(p.id)}
 ${estCount(p.id)||S.sin[p.id]?"":`<button class="btn g" style="margin-top:12px" onclick="S.sin[${p.id}]=1;save();draw()">No tengo estudios previos</button>`}</div><button class="btn" onclick="done=null;draw()">Nueva reserva</button>`}
 return `<h2>Reserva en línea</h2><p class="mut">Vista del paciente. También la puede completar la secretaría.</p><div class="card"><h3 style="margin-top:0">1. Tus datos</h3>${pacFields()}</div><div class="card"><h3 style="margin-top:0">2. Tu turno</h3><div class="row">${turFields()}</div><label class="rad" style="margin-top:12px"><input type="checkbox" id="ack">Me comprometo a cargar mis estudios previos (ecografías, radiografías, tomografías, resonancias) antes de la consulta. *</label><p class="err" id="err"></p><button class="btn" onclick="reservar()">Reservar turno</button></div>`}
 function reservar(){const x=readPac();if(x.e)return err(x.e);if(!$("ack").checked)return err("Confirmá que vas a cargar tus estudios previos.");const t=mkTur(x.ex?x.ex.id:x.p.id);if(!t)return;if(!x.ex){S.pac.push(x.p);save()}done={pid:t.pid,tid:t.id};draw()}
+function pagarSena(tid){const t=S.tur.find(x=>x.id==tid),m=+v("sn_m")||0;t.senaMonto=m;S.pag.push({id:S.n++,tid,pid:t.pid,prid:t.prid,monto:m,forma:"Seña (Mercado Pago)",f:iso(new Date())});save();draw()}
+function vCaja(){const hoy=iso(new Date()),mes=hoy.slice(0,7);
+const pend=S.tur.filter(x=>x.es=="Atendido"&&!S.pag.some(g=>g.tid==x.id));
+const pagM=S.pag.filter(g=>g.f.slice(0,7)==mes),totM=pagM.reduce((a,g)=>a+g.monto,0),totH=pagM.filter(g=>g.f==hoy).reduce((a,g)=>a+g.monto,0);
+const porForma=FORMAS.map(fm=>[fm,pagM.filter(g=>g.forma==fm).reduce((a,g)=>a+g.monto,0)]).filter(x=>x[1]>0);
+return `<div class="stats"><div><b>${money(totH)}</b><span>cobrado hoy</span></div><div><b>${money(totM)}</b><span>cobrado este mes</span></div><div><b>${pend.length}</b><span>consultas por cobrar</span></div></div>
+<h2>Por cobrar</h2><div class="card tw">${pend.length?`<table><tr><th>Fecha</th><th>Paciente</th><th>Cobertura</th><th>Monto</th><th>Forma de pago</th><th></th></tr>${pend.map(x=>{const p=pac(x.pid);return `<tr><td>${fdate(x.f)}</td><td>${p?nom(p):"—"}</td><td>${p?cobChip(p):""}</td><td><input id="pm_${x.id}" type="number" min="0" step="500" style="max-width:120px" value="${Math.max(0,(p?fee(p.cob):0)-(x.senaMonto||0))}">${x.senaMonto?`<br><small class="mut">Ya pagó seña de ${money(x.senaMonto)}</small>`:""}</td><td><select id="pf_${x.id}">${FORMAS.map(f=>`<option${p&&p.cob&&f=="Cobertura (a facturar)"?" selected":""}>${f}</option>`).join("")}</select></td><td><button class="btn g" onclick="registrarPago(${x.id})">Registrar cobro</button></td></tr>`}).join("")}</table>`:'<div class="empty">No hay consultas atendidas pendientes de cobro.</div>'}</div>
+${porForma.length?`<h2>Del mes por forma de pago</h2><div class="card tw"><table><tr><th>Forma de pago</th><th>Total</th></tr>${porForma.map(x=>`<tr><td>${x[0]}</td><td>${money(x[1])}</td></tr>`).join("")}</table></div>`:""}
+<h2>Últimos cobros</h2><div class="card tw">${S.pag.length?`<table><tr><th>Fecha</th><th>Paciente</th><th>Forma de pago</th><th>Monto</th></tr>${[...S.pag].sort((a,b)=>a.f<b.f?1:-1).slice(0,20).map(g=>`<tr><td>${fdate(g.f)}</td><td>${nom(pac(g.pid))}</td><td>${esc(g.forma)}</td><td>${money(g.monto)}</td></tr>`).join("")}</table>`:'<div class="empty">Todavía no se registraron cobros.</div>'}</div>`}
+function registrarPago(tid){const m=+v("pm_"+tid),f=document.getElementById("pf_"+tid).value,x=S.tur.find(t=>t.id==tid);
+S.pag.push({id:S.n++,tid,pid:x.pid,prid:x.prid,monto:m,forma:f,f:iso(new Date())});save();draw()}
+function vPerf(){const i=S.info;return `<h2>Mi consultorio</h2><p class="mut">Así te van a encontrar y reservar turno los pacientes.</p>
+<details class="card" open><summary>Datos del consultorio</summary><div class="row" style="margin-top:10px">
+<label style="flex-basis:260px">Nombre<input id="in_no" value="${esc(i.nombre)}"></label><label style="flex-basis:260px">Dirección<input id="in_di" value="${esc(i.dir)}"></label>
+<label style="flex-basis:220px">Horario de atención<input id="in_ho" value="${esc(i.hor)}"></label><label style="flex-basis:200px">Teléfono<input id="in_te" value="${esc(i.tel)}"></label></div>
+<button class="btn g" style="margin-top:10px" onclick="saveInfo()">Guardar</button></details>
+<div class="card"><h3 style="margin-top:0">${esc(i.nombre)}</h3><p class="mut">${esc(i.dir)} · ${esc(i.hor)} · ${esc(i.tel)}</p>
+<h3>Nuestro equipo</h3>${S.pro.length?S.pro.map(p=>`<p style="margin:6px 0"><b>${nomPro(p)}</b> — ${esc(p.esp)} <small class="mut">(${esc(matr(p))})</small></p>`).join(""):'<p class="empty">Todavía no cargaste profesionales en Equipo.</p>'}
+<button class="btn" style="margin-top:14px" onclick="go('por')">Reservar turno</button></div>`}
+function saveInfo(){S.info={nombre:v("in_no")||"Facultativo",dir:v("in_di"),hor:v("in_ho"),tel:v("in_te")};save();draw()}
+function vEst(){const m=selMes||iso(new Date()).slice(0,7),tm=S.tur.filter(x=>x.f.slice(0,7)==m);
+const tot=tm.length,aus=tm.filter(x=>x.es=="Ausente").length,pctAus=tot?Math.round(aus/tot*100):0,ing=S.pag.filter(g=>g.f.slice(0,7)==m).reduce((a,g)=>a+g.monto,0);
+const porPro=S.pro.map(p=>{const t=tm.filter(x=>x.prid==p.id),a=t.filter(x=>x.es=="Ausente").length;return{p,t:t.length,a,pct:t.length?Math.round(a/t.length*100):0}});
+const meses=[...Array(6)].map((_,i)=>{const d=new Date();d.setMonth(d.getMonth()-(5-i));return iso(d).slice(0,7)});
+const ingM=meses.map(mm=>S.pag.filter(g=>g.f.slice(0,7)==mm).reduce((a,g)=>a+g.monto,0)),max=Math.max(1,...ingM);
+return `<h2>Estadísticas</h2><div class="card"><label style="flex-basis:180px">Mes<input type="month" value="${m}" onchange="selMes=this.value;draw()"></label></div>
+<div class="stats"><div><b>${tot}</b><span>turnos del mes</span></div><div><b>${pctAus}%</b><span>ausentismo (${aus} de ${tot})</span></div><div><b>${money(ing)}</b><span>ingresos del mes</span></div></div>
+<h2>Ausentismo por profesional</h2><div class="card tw">${porPro.length?`<table><tr><th>Profesional</th><th>Turnos</th><th>Ausentes</th><th>% ausentismo</th></tr>${porPro.map(x=>`<tr><td>${nomPro(x.p)}</td><td>${x.t}</td><td>${x.a}</td><td>${x.pct}%</td></tr>`).join("")}</table>`:'<div class="empty">Cargá profesionales en Equipo para ver este detalle.</div>'}</div>
+<h2>Ingresos · últimos 6 meses</h2><div class="card">${meses.map((mm,i)=>`<div style="display:flex;align-items:center;gap:10px;margin:6px 0"><span class="mut" style="width:56px;font-size:12.5px">${mm.slice(5)}/${mm.slice(2,4)}</span><div style="flex:1;background:var(--bg);border-radius:5px;overflow:hidden"><div style="width:${ingM[i]/max*100}%;background:var(--cel);height:16px;border-radius:5px"></div></div><span style="width:110px;text-align:right;font-size:13px;font-weight:600">${money(ingM[i])}</span></div>`).join("")}</div>`}
 draw();
 </script>
 </body>
