@@ -64,6 +64,30 @@ fieldset{border:1px solid var(--line);border-radius:7px;margin:0;padding:8px 12p
 a{color:var(--cel)}[hidden]{display:none!important}
 nav button:last-child{margin-left:auto;color:var(--sol)}nav button.on:last-child{color:#fff}
 details.card summary{margin:-2px 0 0}details.card[open] summary{margin-bottom:14px}
+.formhdr{background:linear-gradient(135deg,#2678B8,#1A4F7A);color:#fff;padding:16px 18px;border-radius:var(--rad) var(--rad) 0 0;margin:-18px -18px 18px}
+.formhdr b{font:700 21px Fraunces,Georgia,serif;display:block}
+.formhdr span{opacity:.85;font-size:13px}
+.step{color:var(--cel);font:700 12px Figtree,sans-serif;text-transform:uppercase;letter-spacing:.06em;margin:18px 0 2px}
+.qrow{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.qrow:last-child{border-bottom:0}
+.qtxt{display:flex;gap:10px;align-items:baseline;flex:1 1 220px}
+.qtxt b{color:var(--mut);font-size:12.5px;min-width:16px}
+.yn{display:flex;gap:8px}
+.yn label{border:1px solid var(--line);border-radius:7px;padding:6px 16px;font-size:13.5px;cursor:pointer;background:var(--surf)}
+.yn input{display:none}
+.yn label:has(input:checked){background:var(--celbg);border-color:var(--cel);color:var(--cel);font-weight:700}
+.nrs{display:flex;gap:5px;flex-wrap:wrap;margin:8px 0}
+.nrs label{border:1px solid var(--line);border-radius:7px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;background:var(--surf)}
+.nrs input{display:none}
+.nrs label:has(input:checked){background:var(--cel);border-color:var(--cel);color:#fff;font-weight:700}
+.sevgrid{overflow-x:auto;margin:8px 0}
+.sevgrid table{border-collapse:collapse;width:100%;font-size:12.5px}
+.sevgrid th{font-weight:600;color:var(--mut);padding:4px 6px;text-align:center;white-space:nowrap}
+.sevgrid td{padding:8px 6px;border-top:1px solid var(--line)}
+.sevgrid td.lbl{text-align:left;white-space:normal;min-width:150px}
+.sevgrid td.opt{text-align:center}
+.doc{background:var(--surf);border:1px solid var(--line);border-radius:var(--rad);padding:20px;font-size:14.5px;line-height:1.7;white-space:pre-line}
+.doc h4{margin:0 0 10px;font:700 16px Fraunces,Georgia,serif;color:var(--cel)}
 </style>
 </head>
 <body>
@@ -81,6 +105,7 @@ TABS_MED=[["hoy","Hoy"],["pac","Pacientes"],["tur","Turnos"],["hc","Historia cl�
 TABS_SEC=[["hoy","Hoy"],["pac","Pacientes"],["tur","Turnos"]],
 ESTADOS=["Pendiente","Atendido","Ausente","Cancelado"],CERT=["Reposo laboral","Aptitud física / deportiva","Asistencia a consulta","Constancia de atención","Otro"],FORMAS=["Efectivo","Transferencia","Tarjeta de débito","Tarjeta de crédito","Cobertura (a facturar)","Seña (Mercado Pago)"],TREC=["Receta simple","Receta repetitiva (tratamiento crónico)"],
 PD_IT=["Quemazón","Hormigueo o cosquilleo","Dolor al roce (ropa, sábanas)","Ataques de dolor súbitos (descargas eléctricas)","Dolor al frío o al calor","Entumecimiento (adormecimiento)","Dolor con solo una ligera presión"],
+PD_NRS=["¿Cómo valoraría el dolor que siente ahora, en este momento?","¿Cuál ha sido la intensidad del dolor más fuerte en las últimas 4 semanas?","Por término medio, ¿cuál ha sido la intensidad de su dolor en las últimas 4 semanas?"],
 PD_OP=["No","Muy ligero","Ligero","Moderado","Intenso","Muy intenso"],
 SL_IT=[["Pinchazos, hormigueo o picor en la zona de dolor",5],["Cambios de color en la piel con el dolor",5],["Sensibilidad anormal al tacto en la zona de dolor",3],["Descargas eléctricas súbitas en la zona de dolor",2],["Sensación de quemazón en la zona de dolor",1],["Al frotar suavemente, molestia distinta a la zona sin dolor",5],["Al presionar suavemente, sensación distinta a la zona sin dolor",3]],
 DN4_IT=["Quemazón","Sensación de frío doloroso","Descargas eléctricas","Hormigueo","Sensación de alfileres o agujas","Entumecimiento","Picazón o comezón","Hipoestesia al tacto (examen)","Hipoestesia a los pinchazos (examen)","Dolor al cepillado o roce de algodón (examen)"],
@@ -592,26 +617,36 @@ button{font:600 14px sans-serif;padding:8px 16px;margin-top:30px;cursor:pointer}
 <p class="b">${certBody(c,p)}</p><p>Se extiende el presente a pedido del interesado, para los fines que estime corresponder.</p>
 <div class="f"><div>${esc(nomPro(dr))}<br>${esc(matr(dr))} · ${esc(dr?dr.esp:"")}</div></div>
 <button onclick="window.print()">Imprimir</button></body></html>`);w.document.close()}
+function nrsRow(name,label){return `<p class="mut" style="margin:14px 0 2px">${label}</p><div class="nrs">${[...Array(11)].map((_,v)=>`<label><input type="radio" name="${name}" value="${v}">${v}</label>`).join("")}</div><div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--mut)"><span>Ningún dolor</span><span>Máximo dolor</span></div>`}
 function painDetectHtml(pid,prid){const ya=S.esc.find(e=>e.pid==pid&&e.tipo=="PainDETECT");
 if(ya)return `<p class="mut">Ya completado el ${fdate(ya.f)} · puntaje <b>${ya.score}/35</b> · ${ya.interp}</p>`;
-return `<h3 style="margin-top:0">PainDETECT</h3><p class="mut">Marcá cómo sentiste cada síntoma en las últimas 4 semanas.</p>
-${PD_IT.map((l,i)=>`<div style="margin:10px 0"><p style="margin:0 0 6px;font-size:14.5px">${l}</p>${PD_OP.map((o,v)=>`<label class="rad" style="display:inline-flex;margin:0 14px 4px 0"><input type="radio" name="pd${i}" value="${v}">${o}</label>`).join("")}</div>`).join("")}
-<p class="err" id="pderr"></p><button class="btn g" onclick="guardarPD(${pid},${prid})">Guardar PainDETECT</button>`}
-function guardarPD(pid,prid){let s=0;for(let i=0;i<PD_IT.length;i++){const x=r("pd"+i);if(x===undefined||x===""){$("pderr").textContent="Respondé todos los ítems.";return}s+=+x}
+return `<div class="formhdr"><b>painDETECT</b><span>Cuestionario del dolor</span></div>
+${PD_NRS.map((l,i)=>nrsRow("pdn"+i,l)).join("")}
+<p class="step" style="margin-top:20px">Síntomas en las últimas 4 semanas</p>
+<div class="sevgrid"><table><tr><th></th>${PD_OP.map(o=>`<th>${o}</th>`).join("")}</tr>
+${PD_IT.map((l,i)=>`<tr><td class="lbl">${l}</td>${PD_OP.map((o,v)=>`<td class="opt"><label class="rad" style="display:inline-flex"><input type="radio" name="pd${i}" value="${v}"></label></td>`).join("")}</tr>`).join("")}</table></div>
+<p class="err" id="pderr"></p><button class="btn g" style="margin-top:12px" onclick="guardarPD(${pid},${prid})">Guardar PainDETECT</button>`}
+function guardarPD(pid,prid){let s=0;for(let i=0;i<PD_IT.length;i++){const x=r("pd"+i);if(x===undefined||x===""){$("pderr").textContent="Respondé todos los ítems de la tabla de síntomas.";return}s+=+x}
 const interp=s<13?"componente neuropático poco probable":s<=18?"resultado ambiguo":"componente neuropático probable";
 S.esc.push({id:S.n++,pid,prid,tipo:"PainDETECT",f:iso(new Date()),quien:"paciente",score:s,max:35,interp});save();draw()}
 function slanssHtml(pid,prid){const ya=S.esc.find(e=>e.pid==pid&&e.tipo=="S-LANSS");
 if(ya)return `<p class="mut">Ya completado el ${fdate(ya.f)} · puntaje <b>${ya.score}/24</b> · ${ya.interp}</p>`;
-return `<h3 style="margin-top:0">S-LANSS</h3><p class="mut">Marcá sí o no para cada pregunta sobre tu dolor en la última semana.</p>
-${SL_IT.map((it,i)=>`<div style="margin:10px 0"><p style="margin:0 0 6px;font-size:14.5px">${it[0]}</p><label class="rad" style="margin-right:14px"><input type="radio" name="sl${i}" value="0">No</label><label class="rad"><input type="radio" name="sl${i}" value="${it[1]}">Sí</label></div>`).join("")}
-<p class="err" id="slerr"></p><button class="btn g" onclick="guardarSL(${pid},${prid})">Guardar S-LANSS</button>`}
+return `<div class="formhdr"><b>S-LANSS</b><span>Evaluación de signos y síntomas neuropáticos de Leeds</span></div>
+${nrsRow("sln","Intensidad del dolor durante la última semana")}
+<p class="step" style="margin-top:18px">Preguntas sobre su dolor</p>
+${SL_IT.map((it,i)=>`<div class="qrow"><div class="qtxt"><b>${i+1}</b>${it[0]}</div><div class="yn"><label><input type="radio" name="sl${i}" value="${it[1]}">Sí</label><label><input type="radio" name="sl${i}" value="0">No</label></div></div>`).join("")}
+<p class="err" id="slerr" style="margin-top:14px"></p><button class="btn g" onclick="guardarSL(${pid},${prid})">Guardar S-LANSS</button>`}
 function guardarSL(pid,prid){let s=0;for(let i=0;i<SL_IT.length;i++){const x=r("sl"+i);if(x===undefined||x===""){$("slerr").textContent="Respondé todas las preguntas.";return}s+=+x}
 const interp=s>=12?"sugiere mecanismo de dolor predominantemente neuropático":"mecanismo neuropático poco probable";
 S.esc.push({id:S.n++,pid,prid,tipo:"S-LANSS",f:iso(new Date()),quien:"paciente",score:s,max:24,interp});save();draw()}
-function dn4Html(){return `<h3 style="margin-top:0">Cuestionario DN4</h3><p class="mut">Lo completa el profesional (interrogatorio + examen físico).</p>
-${DN4_IT.map((l,i)=>`<label class="rad" style="margin:4px 0;display:flex"><input type="checkbox" id="dn${i}">${l}</label>`).join("")}
-<p class="err" id="err"></p><button class="btn g" style="margin-top:8px" onclick="guardarDN4(${selPac})">Guardar DN4</button>`}
-function guardarDN4(pid){let s=0;for(let i=0;i<DN4_IT.length;i++)if(document.getElementById("dn"+i).checked)s++;
+function dnRow(i){return `<div class="qrow"><div class="qtxt"><b>${i+1}</b>${DN4_IT[i]}</div><div class="yn"><label><input type="radio" name="dn${i}" value="1">Sí</label><label><input type="radio" name="dn${i}" value="0">No</label></div></div>`}
+function dn4Html(){return `<div class="formhdr"><b>Cuestionario DN4</b><span>Diagnóstico de dolor neuropático · lo completa el profesional</span></div>
+<p class="step">Paso 1 · Pregunte al paciente</p><p class="mut" style="margin:0 0 4px">¿Tiene el dolor una o más de estas características?</p>${[0,1,2].map(dnRow).join("")}
+<p class="mut" style="margin:14px 0 4px">¿Se asocia el dolor a uno o más de estos síntomas en la misma zona?</p>${[3,4,5,6].map(dnRow).join("")}
+<p class="step">Paso 2 · Examine al paciente</p><p class="mut" style="margin:0 0 4px">¿El examen físico muestra alguna de estas características?</p>${[7,8].map(dnRow).join("")}
+<p class="mut" style="margin:14px 0 4px">¿El dolor se causa o incrementa por esto?</p>${[9].map(dnRow).join("")}
+<p class="err" id="err" style="margin-top:14px"></p><button class="btn g" onclick="guardarDN4(${selPac})">Guardar DN4</button>`}
+function guardarDN4(pid){let s=0;for(let i=0;i<DN4_IT.length;i++){const x=r("dn"+i);if(x===undefined||x===""){err("Respondé las 10 preguntas.");return}s+=+x}
 const interp=s>=4?"sugiere dolor neuropático (sensibilidad 80,5%, especificidad 88,4%)":"no sugiere dolor neuropático";
 S.esc.push({id:S.n++,pid,prid:ses.proId,tipo:"DN4",f:iso(new Date()),quien:"medico",score:s,max:10,interp});save();draw()}
 function vDolor(){const base=misPac();if(!base.length)return `<h2>Dolor</h2><div class="card empty">Todavía no tenés pacientes.</div>`;
@@ -627,11 +662,11 @@ function vConsTpl(){return `<h2>Consentimientos</h2><p class="mut">Biblioteca de
 <details class="card"><summary>Nueva plantilla</summary><label>Nombre<input id="ct_no" placeholder="Ej: Infiltración de hombro"></label>
 <label style="margin-top:10px">Texto del consentimiento<textarea id="ct_cu" style="min-height:140px"></textarea></label>
 <p class="err" id="err"></p><button class="btn" style="margin-top:8px" onclick="addConsTpl()">Guardar plantilla</button></details>
-<div class="card">${S.consTpl.map(t=>`<details style="margin-bottom:10px"><summary>${esc(t.nombre)}</summary><p style="margin-top:10px;white-space:pre-line">${esc(t.cuerpo)}</p><button class="link" onclick="delConsTpl(${t.id})">Eliminar plantilla</button></details>`).join("")||'<div class="empty">Todavía no hay plantillas.</div>'}</div>`}
+<div class="card">${S.consTpl.map(t=>`<details style="margin-bottom:14px"><summary>📋 ${esc(t.nombre)}</summary><div class="doc" style="margin-top:10px"><h4>${esc(t.nombre)}</h4>${esc(t.cuerpo)}</div><button class="link" style="margin-top:8px" onclick="delConsTpl(${t.id})">Eliminar plantilla</button></details>`).join("")||'<div class="empty">Todavía no hay plantillas.</div>'}</div>`}
 function addConsTpl(){if(!v("ct_no")||!v("ct_cu"))return err("Completá el nombre y el texto de la plantilla.");S.consTpl.push({id:S.n++,nombre:v("ct_no"),cuerpo:v("ct_cu")});save();draw()}
 function delConsTpl(id){S.consTpl=S.consTpl.filter(t=>t.id!=id);save();draw()}
 function consList(pid){const l=S.cons.filter(c=>c.pid==pid).sort((a,b)=>a.f<b.f?1:-1);
-return l.length?l.map(c=>`<div class="evo"><small>${fdate(c.f)} · ${esc(nomPro(pro(c.prid)))}</small><br><b>${esc(c.tipo)}</b>${c.tx?`<br>${esc(c.tx)}`:""}<br><span class="chip">Firmado por ${esc(c.firma)}</span></div>`).join(""):'<div class="empty">Sin consentimientos registrados.</div>'}
+return l.length?l.map(c=>`<details style="margin-bottom:12px"><summary>${esc(c.tipo)} · ${fdate(c.f)}</summary><div class="doc" style="margin-top:10px"><h4>${esc(c.tipo)}</h4><p class="mut" style="margin:0 0 10px">${fdate(c.f)} · informado por ${esc(nomPro(pro(c.prid)))}</p>${esc(c.tx)}</div><p style="margin-top:8px"><span class="chip">Firmado por ${esc(c.firma)}</span></p></details>`).join(""):'<div class="empty">Sin consentimientos registrados.</div>'}
 function addCons_(pid){if(!v("co_tx"))return $("err4").textContent="Describí el procedimiento o tratamiento.";
 if(!$("co_ck").checked)return $("err4").textContent="Marcá que el paciente fue informado y acepta.";
 if(!v("co_fi"))return $("err4").textContent="Falta la firma (nombre y apellido) del paciente.";
