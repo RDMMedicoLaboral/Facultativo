@@ -77,9 +77,14 @@ details.card summary{margin:-2px 0 0}details.card[open] summary{margin-bottom:14
 const TD=["DNI","CI","Pasaporte","Libreta Cívica","Libreta de Enrolamiento"],TE=["Ecografía","Radiografía","Tomografía","Resonancia (RMN)","Laboratorio","Otro"],
 VIT=[["tas","TA sistólica (mmHg)"],["tad","TA diastólica (mmHg)"],["fc","Frec. cardíaca (lpm)"],["fr","Frec. resp. (rpm)"],["tm","Temperatura (°C)"],["pe","Peso (kg)"],["tl","Talla (m)"]],
 TABS_SUPER=[["panel","Panel Facultativo"],["cons","Consultorios"]],
-TABS_MED=[["hoy","Hoy"],["pac","Pacientes"],["tur","Turnos"],["hc","Historia clínica"],["cob","Coberturas"],["caja","Caja"],["est","Estadísticas"],["perf","Mi consultorio"]],
+TABS_MED=[["hoy","Hoy"],["pac","Pacientes"],["tur","Turnos"],["hc","Historia clínica"],["ctpl","Consentimientos"],["cob","Coberturas"],["caja","Caja"],["est","Estadísticas"],["perf","Mi consultorio"]],
 TABS_SEC=[["hoy","Hoy"],["pac","Pacientes"],["tur","Turnos"]],
-ESTADOS=["Pendiente","Atendido","Ausente","Cancelado"],CERT=["Reposo laboral","Aptitud física / deportiva","Asistencia a consulta","Constancia de atención","Otro"],FORMAS=["Efectivo","Transferencia","Tarjeta de débito","Tarjeta de crédito","Cobertura (a facturar)","Seña (Mercado Pago)"],TREC=["Receta simple","Receta repetitiva (tratamiento crónico)"],TCONS=["Procedimiento o tratamiento","Telemedicina","Tratamiento de datos personales (Ley 25.326)","Otro"],FILES={};
+ESTADOS=["Pendiente","Atendido","Ausente","Cancelado"],CERT=["Reposo laboral","Aptitud física / deportiva","Asistencia a consulta","Constancia de atención","Otro"],FORMAS=["Efectivo","Transferencia","Tarjeta de débito","Tarjeta de crédito","Cobertura (a facturar)","Seña (Mercado Pago)"],TREC=["Receta simple","Receta repetitiva (tratamiento crónico)"],
+PD_IT=["Quemazón","Hormigueo o cosquilleo","Dolor al roce (ropa, sábanas)","Ataques de dolor súbitos (descargas eléctricas)","Dolor al frío o al calor","Entumecimiento (adormecimiento)","Dolor con solo una ligera presión"],
+PD_OP=["No","Muy ligero","Ligero","Moderado","Intenso","Muy intenso"],
+SL_IT=[["Pinchazos, hormigueo o picor en la zona de dolor",5],["Cambios de color en la piel con el dolor",5],["Sensibilidad anormal al tacto en la zona de dolor",3],["Descargas eléctricas súbitas en la zona de dolor",2],["Sensación de quemazón en la zona de dolor",1],["Al frotar suavemente, molestia distinta a la zona sin dolor",5],["Al presionar suavemente, sensación distinta a la zona sin dolor",3]],
+DN4_IT=["Quemazón","Sensación de frío doloroso","Descargas eléctricas","Hormigueo","Sensación de alfileres o agujas","Entumecimiento","Picazón o comezón","Hipoestesia al tacto (examen)","Hipoestesia a los pinchazos (examen)","Dolor al cepillado o roce de algodón (examen)"],
+TCONS=["Procedimiento o tratamiento","Telemedicina","Tratamiento de datos personales (Ley 25.326)","Otro"],FILES={};
 const OSS=`601104|Asociacion Gualeguaychu de Obras Sociales|
 600309|Asociacion de Obras Sociales de Bella Vista|
 600408|Asociacion de Obras Sociales de Comodoro Rivadavia|
@@ -396,18 +401,19 @@ cobChip=p=>p.cob?`<span class="chip">${esc(p.cob)}</span>${p.plan?" Plan "+esc(p
 function seed(){const h=iso(new Date());return{n:20,sin:{},
 pro:[{id:1,no:"Ornella",ap:"Duarte",esp:"Especialista en Terapia del Dolor",mt:"MN",mn:"54321",user:"oduarte",pass:"1234",sec_user:"sec_oduarte",sec_pass:"1234",activo:true,info:{nombre:"Consultorio Dra. Duarte · Terapia del Dolor",dir:"Av. Corrientes 1234, CABA",hor:"Lun a vie de 9 a 18 h",tel:"+54 11 4000-0001"}},
 {id:2,no:"Martín",ap:"Sosa",esp:"Traumatología",mt:"MP",mn:"22110",user:"msosa",pass:"1234",sec_user:"sec_msosa",sec_pass:"1234",activo:true,info:{nombre:"Consultorio Dr. Sosa · Traumatología",dir:"Av. Santa Fe 4321, CABA",hor:"Lun a vie de 10 a 19 h",tel:"+54 11 4000-0002"}}],cert:[],pag:[],cons:[],rec:[],
-fees:{1:{__particular:40000},2:{__particular:35000}},tiers:[{max:30,pct:5},{max:100,pct:4},{max:99999,pct:3}],
+fees:{1:{__particular:40000},2:{__particular:35000}},tiers:[{max:30,pct:5},{max:100,pct:4},{max:99999,pct:3}],liq:[],umbral:15000,esc:[],
+consTpl:[{id:1,nombre:"Uso de medicamentos controlados a largo plazo (dolor crónico)",cuerpo:"Se me ha explicado que el tratamiento de mi dolor crónico incluye medicamentos controlados (opioides u otros fármacos de prescripción controlada). Entiendo que pueden aliviar el dolor y mejorar mi funcionalidad diaria, aunque los síntomas pueden no desaparecer por completo y el tratamiento puede ajustarse con el tiempo.\\n\\nFui informado/a de los riesgos: uso inadecuado o por terceros, posibilidad de sobredosis, efectos secundarios (somnolencia, estreñimiento, malestar digestivo, picazón, enlentecimiento respiratorio), dependencia física, síntomas de abstinencia si se suspende bruscamente, tolerancia y riesgo de adicción (mayor si tengo antecedentes personales o familiares de consumo problemático de sustancias).\\n\\nMe comprometo a tomar la medicación solo como fue indicada, no compartirla con terceros, informar sobre otros medicamentos que tome y avisar ante cualquier efecto adverso. Si estoy embarazada o busco un embarazo, lo informaré a mi médico."},
+{id:2,nombre:"Procedimiento intervencionista (bloqueos / infiltraciones)",cuerpo:"Se me explicó el procedimiento propuesto para mi dolor (bloqueo nervioso, infiltración articular o facetaria u otro procedimiento intervencionista), en qué consiste, cómo se realiza (habitualmente con anestesia local y, cuando corresponde, guía por imágenes) y su duración aproximada.\\n\\nObjetivo: disminuir el dolor y mejorar mi funcionalidad. Alternativas razonables: tratamiento farmacológico u otras terapias no invasivas. Si no se realiza: persistencia o menor mejoría del dolor.\\n\\nRiesgos informados: molestias locales en el sitio de punción, episodio de mareo o lipotimia (síncope vasovagal) y, de forma poco frecuente, complicaciones más serias asociadas a la técnica. Existen riesgos particulares según mis antecedentes, que fueron conversados con mi médico.\\n\\nDeclaro haber sido informado/a de ventajas, inconvenientes y alternativas, haber podido preguntar lo que consideré necesario, y que puedo revocar este consentimiento en cualquier momento antes de realizarse."}],
 cus:["OSDE","Swiss Medical","Galeno","Medifé","Sancor Salud","PAMI (INSSJP)","IOMA"].map(n=>({n,r:"",s:"Prepaga u otra"})),
 pac:[{id:1,no:"Lucía",ap:"Fernández",td:"DNI",nd:"30456789",sx:"Femenino",nac:"1985-03-14",tp:"+549",tn:"1155550142",em:"lucia@mail.com",cob:"OSDE",plan:"310",afi:"12345678901",ant:{}},
 {id:2,no:"Ricardo",ap:"Gómez",td:"DNI",nd:"18234567",sx:"Masculino",nac:"1962-09-02",tp:"+549",tn:"3515550177",em:"ricardo@mail.com",cob:"PAMI (INSSJP)",plan:"",afi:"15182345670",ant:{per:"Hipertensión arterial.",fam:"Padre con ACV.",rel:"Latigazo cervical con hernia C5-C6 posterolateral hace 10 años (accidente automovilístico). Sin cirugía; inmovilización 1 año."}},
 {id:3,no:"Camila",ap:"Ibarra",td:"Pasaporte",nd:"AB123456",sx:"Otro",nac:"2001-11-27",tp:"+598",tn:"9155501190",em:"camila@mail.com",cob:"",plan:"",afi:"",ant:{}}],
 tur:[{id:1,pid:1,prid:1,f:h,h:"09:00",mo:"Control anual",mod:"Presencial",es:"Pendiente"},{id:2,pid:2,prid:2,f:h,h:"09:30",mo:"Dolor cervical",mod:"Presencial",es:"Pendiente"},{id:3,pid:3,prid:1,f:h,h:"10:15",mo:"Primera consulta",mod:"Telemedicina",sala:"Facultativo-demo3",es:"Pendiente"}],
 est:[{id:4,pid:2,tp:"Resonancia (RMN)",f:"2024-06-10",d:"Columna cervical",fn:"rmn-cervical-2024.pdf"}],evo:[]}}
-function load(){try{const x=localStorage.getItem("facultativo-v6");if(x)return JSON.parse(x)}catch(e){}return seed()}
+function load(){try{const x=localStorage.getItem("facultativo-v7");if(x)return JSON.parse(x)}catch(e){}return seed()}
 function save(){try{localStorage.setItem("facultativo-v2",JSON.stringify(S))}catch(e){}}
 S=load();
-const ALLOWED={superadmin:["panel","cons"],medico:["hoy","pac","tur","hc","cob","caja","est","perf"],secretaria:["hoy","pac","tur"]};
-const go=t=>{if(ses&&!ALLOWED[ses.rol].includes(t))t=ALLOWED[ses.rol][0];tab=t;draw()},openHc=id=>{if(ses.rol!="secretaria"){selPac=id;go("hc")}};
+const go=t=>{if(ses){const allow=tabsFor(ses).map(x=>x[0]);if(!allow.includes(t))t=allow[0]}tab=t;draw()},openHc=id=>{if(ses.rol!="secretaria"){selPac=id;go("hc")}};
 function misPac(){return ses&&ses.rol!="superadmin"?S.pac.filter(p=>S.tur.some(t=>t.pid==p.id&&t.prid==ses.proId)):S.pac}
 function login(){const u=v("lg_u").toLowerCase(),p=v("lg_p");
 if(u=="ronndu"&&p=="rd_2026!"){ses={rol:"superadmin",nombre:"Ronndu"}}
@@ -415,7 +421,7 @@ else{const pm=S.pro.find(x=>x.user&&x.user.toLowerCase()==u&&x.pass==p),ps=S.pro
 if(!pr){lerr="Usuario o contraseña incorrectos.";draw();return}
 if(pr.activo===false){lerr="Este consultorio está desactivado. Contactá al administrador de Facultativo.";draw();return}
 ses=pm?{rol:"medico",proId:pr.id,nombre:nomPro(pr)}:{rol:"secretaria",proId:pr.id,nombre:"Secretaría de "+nomPro(pr)}}
-lerr="";try{localStorage.setItem("facultativo-ses",JSON.stringify(ses))}catch(e){}selPro=ses.rol!="superadmin"?ses.proId:"";tab=ALLOWED[ses.rol][0];draw()}
+lerr="";try{localStorage.setItem("facultativo-ses",JSON.stringify(ses))}catch(e){}selPro=ses.rol!="superadmin"?ses.proId:"";tab=tabsFor(ses)[0][0];draw()}
 function logout(){ses=null;try{localStorage.removeItem("facultativo-ses")}catch(e){}selPro="";tab="hoy";draw()}
 function vLogin(){return `<div class="card" style="max-width:380px;margin:50px auto"><h2 style="margin-top:0">Ingresar</h2>
 <label>Usuario<input id="lg_u" autocomplete="username" placeholder="oduarte"></label>
@@ -428,17 +434,28 @@ function fee(n,proId){const pf=S.fees[proId]||{};const k=n||"__particular";retur
 function setFee(n,proId,x){S.fees[proId]=S.fees[proId]||{};S.fees[proId][n||"__particular"]=+x||0;save();draw()}
 function money(n){return "$ "+Number(n||0).toLocaleString("es-AR")}
 function tierPct(n){for(const t of S.tiers)if(n<=t.max)return t.pct;return S.tiers[S.tiers.length-1].pct}
-function comisionMedico(proId,mes){const pagos=S.pag.filter(g=>g.prid==proId&&g.f.slice(0,7)==mes),n=pagos.length,total=pagos.reduce((a,g)=>a+g.monto,0),pct=tierPct(n);return{n,total,pct,com:Math.round(total*pct)/100}}
+function comisionMes(proId,mes){const pagos=S.pag.filter(g=>g.prid==proId&&g.f.slice(0,7)==mes),n=pagos.length,pct=tierPct(n);
+const totalApp=pagos.filter(g=>g.forma=="Seña (Mercado Pago)").reduce((a,g)=>a+g.monto,0),total=pagos.reduce((a,g)=>a+g.monto,0),totalCash=total-totalApp;
+const comApp=Math.round(totalApp*pct)/100,comCash=Math.round(totalCash*pct)/100;
+return{n,pct,total,totalApp,totalCash,comApp,comCash,com:comApp+comCash}}
+function saldoPendiente(proId){const meses=[...new Set(S.pag.filter(g=>g.prid==proId).map(g=>g.f.slice(0,7)))];
+const deuda=meses.reduce((a,m)=>a+comisionMes(proId,m).comCash,0),pagado=S.liq.filter(l=>l.proId==proId).reduce((a,l)=>a+l.monto,0);
+return Math.max(0,Math.round((deuda-pagado)*100)/100)}
+function liquidarSaldo(proId){const m=saldoPendiente(proId);if(m<=0)return;S.liq.push({id:S.n++,proId,monto:m,f:iso(new Date())});save();draw()}
+function registrarLiq(){const pid=+v("liq_pid"),m=+v("liq_m");if(!m||m<=0)return err("Ingresá un monto válido.");S.liq.push({id:S.n++,proId:pid,monto:m,f:iso(new Date())});save();draw()}
 function hashCode(s){let h=0;for(let i=0;i<s.length;i++){h=(h<<5)-h+s.charCodeAt(i);h|=0}return Math.abs(h).toString(36).toUpperCase().padStart(8,"0").slice(0,8)}
 function nomPro(p){return p?`Dr./Dra. ${esc(p.no)} ${esc(p.ap)}`:"—"}
 function matr(p){return p?`${p.mt} ${p.mn}`:""}
 const proOpts=s=>S.pro.map(p=>`<option value="${p.id}"${p.id==s?" selected":""}>${nomPro(p)} · ${esc(p.esp)}</option>`).join("");
+function esEspDolor(p){return p&&/dolor/i.test(p.esp)}
+function tabsFor(s){if(s.rol=="medico"){const t=TABS_MED.slice();if(esEspDolor(pro(s.proId))){const i=t.findIndex(x=>x[0]=="ctpl");t.splice(i,0,["dolor","Dolor"])}return t}
+return({superadmin:TABS_SUPER,secretaria:TABS_SEC})[s.rol]}
 function draw(){
 if(!ses&&tab!="por"){$("nav").innerHTML="";$("app").innerHTML=vLogin();return}
 if(!ses){$("nav").innerHTML=`<button onclick="tab='hoy';draw()">← Volver</button>`;$("app").innerHTML=vPor();return}
-const tabs=({superadmin:TABS_SUPER,medico:TABS_MED,secretaria:TABS_SEC})[ses.rol];
+const tabs=tabsFor(ses);
 $("nav").innerHTML=tabs.map(t=>`<button class="${t[0]==tab?"on":""}" onclick="go('${t[0]}')">${t[1]}</button>`).join("")+`<button onclick="logout()">Salir · ${esc(ses.nombre)}</button>`;
-$("app").innerHTML=({hoy:vHoy,pac:vPac,tur:vTur,hc:vHc,cob:vCob,cons:vCons,caja:vCaja,est:vEst,perf:vPerf,panel:vPanel,por:vPor})[tab]()}
+$("app").innerHTML=({hoy:vHoy,pac:vPac,tur:vTur,hc:vHc,ctpl:vConsTpl,dolor:vDolor,cob:vCob,cons:vCons,caja:vCaja,est:vEst,perf:vPerf,panel:vPanel,por:vPor})[tab]()}
 const pacOpts=(s,list)=>(list||S.pac).map(p=>`<option value="${p.id}"${p.id==s?" selected":""}>${nom(p)} · ${esc(p.td)} ${docFmt(p)}</option>`).join(""),
 cobOpts=()=>S.cob.map(c=>`<option>${esc(c.n)}</option>`).join("");
 function estCount(pid){return S.est.filter(e=>e.pid==pid).length}
@@ -481,7 +498,7 @@ return `<h2>Pacientes</h2><p class="mut">${ses.rol=="secretaria"?"Mostrando los 
 <div class="card"><label>Buscar por nro. de documento o apellido<input id="q" value="${esc(filtro)}" oninput="filtro=this.value;draw();const i=$('q');i.focus();i.setSelectionRange(99,99)"></label></div>
 <div class="card tw">${l.length?`<table><tr><th>Documento</th><th>Paciente</th><th>Edad</th><th>Cobertura</th><th>Celular</th><th></th></tr>${l.map(p=>`<tr><td class="dni">${esc(p.td)}<br>${docFmt(p)}</td><td>${nom(p)}<br><small>${esc(p.sx)}</small></td><td>${edad(p.nac)}</td><td>${cobChip(p)}</td><td>${esc(p.tp)} ${esc(p.tn)}<br><small>${esc(p.em)}</small></td><td>${ses.rol=="secretaria"?"":`<button class="link" onclick="openHc(${p.id})">Historia</button>`}</td></tr>`).join("")}</table>`:'<div class="empty">Sin resultados.</div>'}</div>`}
 function turFields(){const t=new Date();t.setDate(t.getDate()+1);
-const pf=ses.rol!="superadmin"?`<input type="hidden" id="trp" value="${ses.proId}"><label style="flex-basis:220px">Profesional<input value="${esc(nomPro(pro(ses.proId)))}" disabled></label>`:`<label style="flex-basis:220px">Profesional<select id="trp">${proOpts()}</select></label>`;
+const pf=ses&&ses.rol!="superadmin"?`<input type="hidden" id="trp" value="${ses.proId}"><label style="flex-basis:220px">Profesional<input value="${esc(nomPro(pro(ses.proId)))}" disabled></label>`:`<label style="flex-basis:220px">Profesional<select id="trp">${proOpts()}</select></label>`;
 return `${pf}<label>Fecha<input id="tf" type="date" value="${iso(t)}"></label><label>Hora<input id="th" type="time" value="09:00"></label>
 <label>Modalidad<select id="tm"><option>Presencial</option><option>Telemedicina</option></select></label><label style="flex-basis:220px">Motivo<input id="tmo"></label>`}
 function mkTur(pid){if(!v("tf")||!v("th"))return err("Elegí fecha y hora.");
@@ -530,7 +547,7 @@ return `<h2>Historia clínica</h2><div class="card"><label>Paciente<select oncha
 <p class="err" id="err3"></p><button class="btn g" style="margin-top:8px" onclick="addCert(${p.id})">Generar certificado</button>
 ${certList(p.id)}</details>
 <details class="card"><summary>Consentimientos informados</summary><div class="row">
-<label style="flex-basis:220px">Tipo<select id="co_tp">${TCONS.map(t=>`<option>${t}</option>`).join("")}</select></label>
+<label style="flex-basis:260px">Tipo<select id="co_tp" onchange="ctplPick()">${TCONS.map(t=>`<option>${t}</option>`).join("")}${S.consTpl.map(t=>`<option value="tpl:${t.id}">📋 ${esc(t.nombre)}</option>`).join("")}</select></label>
 <label style="flex-basis:220px">Profesional que informa<select id="co_pr">${proOpts()}</select></label></div>
 <label style="margin-top:10px">Detalle (procedimiento, riesgos, alternativas)<textarea id="co_tx" placeholder="Describí el procedimiento o tratamiento, sus riesgos y alternativas"></textarea></label>
 <label class="rad" style="margin-top:10px"><input type="checkbox" id="co_ck">El/la paciente fue informado/a y acepta</label>
@@ -539,9 +556,11 @@ ${certList(p.id)}</details>
 ${consList(p.id)}</details>
 <details class="card"><summary>Recetas electrónicas</summary><div class="row">
 <label style="flex-basis:200px">Tipo<select id="rc_tp">${TREC.map(t=>`<option>${t}</option>`).join("")}</select></label>
-<label style="flex-basis:220px">Profesional prescriptor<select id="rc_pr">${proOpts()}</select></label></div>
-<div class="row" style="margin-top:10px"><label style="flex-basis:240px">Medicamento y presentación *<input id="rc_me" placeholder="Ibuprofeno 600 mg comprimidos"></label>
+<label style="flex-basis:220px">Profesional prescriptor<select id="rc_pr">${proOpts()}</select></label>
+<fieldset><legend>Copia</legend><label class="rad"><input type="radio" name="rc_cop" value="Única" checked>Única</label><label class="rad"><input type="radio" name="rc_cop" value="Duplicada">Duplicada</label></fieldset></div>
+<div class="row" style="margin-top:10px"><label style="flex-basis:240px">Medicamento (nombre genérico) y presentación *<input id="rc_me" placeholder="Ibuprofeno 600 mg comprimidos"></label>
 <label style="flex-basis:160px">Cantidad *<input id="rc_ca" placeholder="1 caja x 20"></label><label style="flex-basis:200px">Dosis / posología *<input id="rc_do" placeholder="1 c/8 h por 5 días"></label></div>
+<p class="mut" style="margin-top:6px">Usá el nombre genérico de la droga, no el comercial: el vademécum varía según el nombre de fantasía. Elegí "Duplicada" para medicamentos controlados — se imprime una segunda copia con la leyenda DUPLICADO, como exige la normativa.</p>
 <label style="margin-top:10px">Indicaciones adicionales<textarea id="rc_in"></textarea></label>
 <p class="err" id="err5"></p><button class="btn g" style="margin-top:8px" onclick="addRec(${p.id})">Emitir receta</button>
 <p class="mut" style="margin-top:8px">La firma electrónica que genera esta receta es un código de verificación interno del prototipo, no una firma digital con validez legal. Para que tenga validez ante farmacias según la Ley 27.553, hace falta emitirla con un certificado digital de un prestador habilitado.</p>
@@ -573,6 +592,44 @@ button{font:600 14px sans-serif;padding:8px 16px;margin-top:30px;cursor:pointer}
 <p class="b">${certBody(c,p)}</p><p>Se extiende el presente a pedido del interesado, para los fines que estime corresponder.</p>
 <div class="f"><div>${esc(nomPro(dr))}<br>${esc(matr(dr))} · ${esc(dr?dr.esp:"")}</div></div>
 <button onclick="window.print()">Imprimir</button></body></html>`);w.document.close()}
+function painDetectHtml(pid,prid){const ya=S.esc.find(e=>e.pid==pid&&e.tipo=="PainDETECT");
+if(ya)return `<p class="mut">Ya completado el ${fdate(ya.f)} · puntaje <b>${ya.score}/35</b> · ${ya.interp}</p>`;
+return `<h3 style="margin-top:0">PainDETECT</h3><p class="mut">Marcá cómo sentiste cada síntoma en las últimas 4 semanas.</p>
+${PD_IT.map((l,i)=>`<div style="margin:10px 0"><p style="margin:0 0 6px;font-size:14.5px">${l}</p>${PD_OP.map((o,v)=>`<label class="rad" style="display:inline-flex;margin:0 14px 4px 0"><input type="radio" name="pd${i}" value="${v}">${o}</label>`).join("")}</div>`).join("")}
+<p class="err" id="pderr"></p><button class="btn g" onclick="guardarPD(${pid},${prid})">Guardar PainDETECT</button>`}
+function guardarPD(pid,prid){let s=0;for(let i=0;i<PD_IT.length;i++){const x=r("pd"+i);if(x===undefined||x===""){$("pderr").textContent="Respondé todos los ítems.";return}s+=+x}
+const interp=s<13?"componente neuropático poco probable":s<=18?"resultado ambiguo":"componente neuropático probable";
+S.esc.push({id:S.n++,pid,prid,tipo:"PainDETECT",f:iso(new Date()),quien:"paciente",score:s,max:35,interp});save();draw()}
+function slanssHtml(pid,prid){const ya=S.esc.find(e=>e.pid==pid&&e.tipo=="S-LANSS");
+if(ya)return `<p class="mut">Ya completado el ${fdate(ya.f)} · puntaje <b>${ya.score}/24</b> · ${ya.interp}</p>`;
+return `<h3 style="margin-top:0">S-LANSS</h3><p class="mut">Marcá sí o no para cada pregunta sobre tu dolor en la última semana.</p>
+${SL_IT.map((it,i)=>`<div style="margin:10px 0"><p style="margin:0 0 6px;font-size:14.5px">${it[0]}</p><label class="rad" style="margin-right:14px"><input type="radio" name="sl${i}" value="0">No</label><label class="rad"><input type="radio" name="sl${i}" value="${it[1]}">Sí</label></div>`).join("")}
+<p class="err" id="slerr"></p><button class="btn g" onclick="guardarSL(${pid},${prid})">Guardar S-LANSS</button>`}
+function guardarSL(pid,prid){let s=0;for(let i=0;i<SL_IT.length;i++){const x=r("sl"+i);if(x===undefined||x===""){$("slerr").textContent="Respondé todas las preguntas.";return}s+=+x}
+const interp=s>=12?"sugiere mecanismo de dolor predominantemente neuropático":"mecanismo neuropático poco probable";
+S.esc.push({id:S.n++,pid,prid,tipo:"S-LANSS",f:iso(new Date()),quien:"paciente",score:s,max:24,interp});save();draw()}
+function dn4Html(){return `<h3 style="margin-top:0">Cuestionario DN4</h3><p class="mut">Lo completa el profesional (interrogatorio + examen físico).</p>
+${DN4_IT.map((l,i)=>`<label class="rad" style="margin:4px 0;display:flex"><input type="checkbox" id="dn${i}">${l}</label>`).join("")}
+<p class="err" id="err"></p><button class="btn g" style="margin-top:8px" onclick="guardarDN4(${selPac})">Guardar DN4</button>`}
+function guardarDN4(pid){let s=0;for(let i=0;i<DN4_IT.length;i++)if(document.getElementById("dn"+i).checked)s++;
+const interp=s>=4?"sugiere dolor neuropático (sensibilidad 80,5%, especificidad 88,4%)":"no sugiere dolor neuropático";
+S.esc.push({id:S.n++,pid,prid:ses.proId,tipo:"DN4",f:iso(new Date()),quien:"medico",score:s,max:10,interp});save();draw()}
+function vDolor(){const base=misPac();if(!base.length)return `<h2>Dolor</h2><div class="card empty">Todavía no tenés pacientes.</div>`;
+if(!base.some(x=>x.id==selPac))selPac=base[0].id;const p=pac(selPac),esc_=S.esc.filter(e=>e.pid==selPac).sort((a,b)=>a.f<b.f?1:-1);
+return `<h2>Dolor</h2><div class="card"><label>Paciente<select onchange="selPac=this.value;draw()">${pacOpts(selPac,base)}</select></label></div>
+<details class="card" open><summary>Cuestionario DN4 (lo completa el médico)</summary>${dn4Html()}</details>
+<div class="card"><h3 style="margin-top:0">Escalas completadas por el paciente</h3>
+<p class="mut">PainDETECT y S-LANSS se le ofrecen al paciente al reservar el turno, si eligió un profesional especialista en dolor.</p>
+${esc_.filter(e=>e.tipo!="DN4").length?"":'<div class="empty">Todavía no completó ninguna.</div>'}</div>
+<div class="card"><h3 style="margin-top:0">Historial</h3>${esc_.length?esc_.map(e=>`<div class="evo"><small>${fdate(e.f)} · ${e.quien=="paciente"?"completado por el paciente":"completado por "+esc(nomPro(pro(e.prid)))}</small><br><b>${e.tipo}</b> — ${e.score}/${e.max}<br>${esc(e.interp)}</div>`).join(""):'<div class="empty">Sin escalas registradas.</div>'}</div>`}
+function ctplPick(){const v_=document.getElementById("co_tp").value;if(v_.startsWith("tpl:")){const t=S.consTpl.find(x=>x.id==+v_.slice(4));if(t)$("co_tx").value=t.cuerpo}}
+function vConsTpl(){return `<h2>Consentimientos</h2><p class="mut">Biblioteca de plantillas de consentimiento informado. Al generar un consentimiento para un paciente (desde su historia clínica), podés elegir una de estas y se precarga el texto para ajustarlo caso por caso.</p>
+<details class="card"><summary>Nueva plantilla</summary><label>Nombre<input id="ct_no" placeholder="Ej: Infiltración de hombro"></label>
+<label style="margin-top:10px">Texto del consentimiento<textarea id="ct_cu" style="min-height:140px"></textarea></label>
+<p class="err" id="err"></p><button class="btn" style="margin-top:8px" onclick="addConsTpl()">Guardar plantilla</button></details>
+<div class="card">${S.consTpl.map(t=>`<details style="margin-bottom:10px"><summary>${esc(t.nombre)}</summary><p style="margin-top:10px;white-space:pre-line">${esc(t.cuerpo)}</p><button class="link" onclick="delConsTpl(${t.id})">Eliminar plantilla</button></details>`).join("")||'<div class="empty">Todavía no hay plantillas.</div>'}</div>`}
+function addConsTpl(){if(!v("ct_no")||!v("ct_cu"))return err("Completá el nombre y el texto de la plantilla.");S.consTpl.push({id:S.n++,nombre:v("ct_no"),cuerpo:v("ct_cu")});save();draw()}
+function delConsTpl(id){S.consTpl=S.consTpl.filter(t=>t.id!=id);save();draw()}
 function consList(pid){const l=S.cons.filter(c=>c.pid==pid).sort((a,b)=>a.f<b.f?1:-1);
 return l.length?l.map(c=>`<div class="evo"><small>${fdate(c.f)} · ${esc(nomPro(pro(c.prid)))}</small><br><b>${esc(c.tipo)}</b>${c.tx?`<br>${esc(c.tx)}`:""}<br><span class="chip">Firmado por ${esc(c.firma)}</span></div>`).join(""):'<div class="empty">Sin consentimientos registrados.</div>'}
 function addCons_(pid){if(!v("co_tx"))return $("err4").textContent="Describí el procedimiento o tratamiento.";
@@ -580,22 +637,24 @@ if(!$("co_ck").checked)return $("err4").textContent="Marcá que el paciente fue 
 if(!v("co_fi"))return $("err4").textContent="Falta la firma (nombre y apellido) del paciente.";
 S.cons.push({id:S.n++,pid,prid:+v("co_pr"),f:iso(new Date()),tipo:v("co_tp"),tx:v("co_tx"),firma:v("co_fi")});save();draw()}
 function recList(pid){const l=S.rec.filter(c=>c.pid==pid).sort((a,b)=>a.f<b.f?1:-1);
-return l.length?l.map(c=>`<div class="evo"><small>${fdate(c.f)} · ${esc(nomPro(pro(c.prid)))} · ${esc(matr(pro(c.prid)))}</small><br><b>${esc(c.me)}</b> — ${esc(c.ca)}<br>${esc(c.do)}${c.in?`<br>${esc(c.in)}`:""}<br><span class="chip sol">Código ${c.cod}</span> <button class="link" style="margin-left:8px" onclick="printRec(${c.id})">Imprimir</button></div>`).join(""):'<div class="empty">Sin recetas emitidas.</div>'}
+return l.length?l.map(c=>`<div class="evo"><small>${fdate(c.f)} · ${esc(nomPro(pro(c.prid)))} · ${esc(matr(pro(c.prid)))}</small><br><b>${esc(c.me)}</b> — ${esc(c.ca)}<br>${esc(c.do)}${c.in?`<br>${esc(c.in)}`:""}<br><span class="chip sol">Código ${c.cod}</span> <span class="chip">${esc(c.cop)}</span> <button class="link" style="margin-left:8px" onclick="printRec(${c.id})">Imprimir</button></div>`).join(""):'<div class="empty">Sin recetas emitidas.</div>'}
 function addRec(pid){if(!v("rc_me")||!v("rc_ca")||!v("rc_do"))return $("err5").textContent="Completá medicamento, cantidad y dosis.";
 const id=S.n++,f=iso(new Date()),cod=hashCode(pid+v("rc_me")+f+id);
-S.rec.push({id,pid,prid:+v("rc_pr"),f,tipo:v("rc_tp"),me:v("rc_me"),ca:v("rc_ca"),do:v("rc_do"),in:v("rc_in"),cod});save();draw()}
+S.rec.push({id,pid,prid:+v("rc_pr"),f,tipo:v("rc_tp"),cop:r("rc_cop")||"Única",me:v("rc_me"),ca:v("rc_ca"),do:v("rc_do"),in:v("rc_in"),cod});save();draw()}
 function printRec(id){const c=S.rec.find(x=>x.id==id),p=pac(c.pid),dr=pro(c.prid),w=window.open("","_blank");
+const copia=(marca)=>`<div style="page-break-after:always;position:relative">${marca?`<div style="position:absolute;top:10px;right:0;color:#C33B32;font:700 22px sans-serif;border:2px solid #C33B32;padding:2px 14px;transform:rotate(8deg)">DUPLICADO</div>`:""}
+<h1>Facultativo · ${esc(c.tipo)}</h1><p class="h">${fdate(c.f)} · Paciente: ${nom(p)} · ${esc(p.td)} ${docFmt(p)}</p>
+<p class="b"><b>${esc(c.me)}</b><br>Cantidad: ${esc(c.ca)}<br>Dosis: ${esc(c.do)}${c.in?`<br>Indicaciones: ${esc(c.in)}`:""}</p>
+<p>Código de verificación: <span class="cod">${c.cod}</span></p>
+<div class="f"><div>${esc(nomPro(dr))}<br>${esc(matr(dr))} · ${esc(dr?dr.esp:"")}</div></div>
+<p class="warn">Documento generado por un prototipo. No constituye una receta con firma digital válida ante farmacias (Ley 27.553).</p></div>`;
 w.document.write(`<!DOCTYPE html><html lang="es-AR"><head><meta charset="utf-8"><title>Receta electrónica</title>
 <style>body{font-family:Georgia,serif;max-width:640px;margin:40px auto;color:#14293D;line-height:1.7}
 h1{font-size:20px;border-bottom:2px solid #14293D;padding-bottom:10px}.h{color:#5B6E80;font-size:13px}
 .b{margin:22px 0;font-size:16px}.f{margin-top:50px}.f div{border-top:1px solid #14293D;width:260px;padding-top:6px;font-size:13px}
 .cod{font-family:monospace;background:#F3F7FA;padding:4px 8px;border-radius:4px}
 .warn{font-size:12px;color:#8A6416;margin-top:30px}button{font:600 14px sans-serif;padding:8px 16px;margin-top:20px;cursor:pointer}</style></head><body>
-<h1>Facultativo · ${esc(c.tipo)}</h1><p class="h">${fdate(c.f)} · Paciente: ${nom(p)} · ${esc(p.td)} ${docFmt(p)}</p>
-<p class="b"><b>${esc(c.me)}</b><br>Cantidad: ${esc(c.ca)}<br>Dosis: ${esc(c.do)}${c.in?`<br>Indicaciones: ${esc(c.in)}`:""}</p>
-<p>Código de verificación: <span class="cod">${c.cod}</span></p>
-<div class="f"><div>${esc(nomPro(dr))}<br>${esc(matr(dr))} · ${esc(dr?dr.esp:"")}</div></div>
-<p class="warn">Documento generado por un prototipo. No constituye una receta con firma digital válida ante farmacias (Ley 27.553).</p>
+${copia(false)}${c.cop=="Duplicada"?copia(true):""}
 <button onclick="window.print()">Imprimir</button></body></html>`);w.document.close()}
 function toggleActivo(id){const p=pro(id);p.activo=!p.activo;save();draw()}
 function vCons(){return `<h2>Consultorios</h2><p class="mut">Cada médico es dueño de su propio consultorio dentro de Facultativo.</p>
@@ -632,16 +691,24 @@ return `<h2>Reserva en línea</h2><div class="card"><b>Turno reservado</b><p>${n
 <div class="row"><label style="flex-basis:160px">Monto de la seña<input id="sn_m" type="number" min="0" step="500" value="${sug}"></label><button class="btn" style="align-self:end" onclick="pagarSena(${t.id})">Pagar con Mercado Pago</button></div>
 <p class="mut" style="margin-top:8px">En este prototipo el pago es simulado. Una versión real necesita el checkout de Mercado Pago con credenciales del consultorio.</p>`}</div>
 <div class="card"><h3 style="margin-top:0">Cargá tus estudios previos antes de la consulta</h3><p class="mut">Ecografías, radiografías, tomografías o resonancias, aunque tengan años. El profesional los compara con los nuevos.</p>${estBlock(p.id)}
-${estCount(p.id)||S.sin[p.id]?"":`<button class="btn g" style="margin-top:12px" onclick="S.sin[${p.id}]=1;save();draw()">No tengo estudios previos</button>`}</div><button class="btn" onclick="done=null;draw()">Nueva reserva</button>`}
+${estCount(p.id)||S.sin[p.id]?"":`<button class="btn g" style="margin-top:12px" onclick="S.sin[${p.id}]=1;save();draw()">No tengo estudios previos</button>`}</div>
+${esEspDolor(pro(t.prid))?`<details class="card" open><summary>Completá esto antes de tu consulta: PainDETECT</summary>${painDetectHtml(p.id,t.prid)}</details><details class="card" open><summary>Completá esto antes de tu consulta: S-LANSS</summary>${slanssHtml(p.id,t.prid)}</details>`:""}
+<button class="btn" onclick="done=null;draw()">Nueva reserva</button>`}
 return `<h2>Reserva en línea</h2><p class="mut">Vista del paciente. También la puede completar la secretaría.</p><div class="card"><h3 style="margin-top:0">1. Tus datos</h3>${pacFields()}</div><div class="card"><h3 style="margin-top:0">2. Tu turno</h3><div class="row">${turFields()}</div><label class="rad" style="margin-top:12px"><input type="checkbox" id="ack">Me comprometo a cargar mis estudios previos (ecografías, radiografías, tomografías, resonancias) antes de la consulta. *</label><p class="err" id="err"></p><button class="btn" onclick="reservar()">Reservar turno</button></div>`}
 function reservar(){const x=readPac();if(x.e)return err(x.e);if(!$("ack").checked)return err("Confirmá que vas a cargar tus estudios previos.");const t=mkTur(x.ex?x.ex.id:x.p.id);if(!t)return;if(!x.ex){S.pac.push(x.p);save()}done={pid:t.pid,tid:t.id};draw()}
 function pagarSena(tid){const t=S.tur.find(x=>x.id==tid),m=+v("sn_m")||0;t.senaMonto=m;S.pag.push({id:S.n++,tid,pid:t.pid,prid:t.prid,monto:m,forma:"Seña (Mercado Pago)",f:iso(new Date())});save();draw()}
 function vCaja(){const hoy=iso(new Date()),mes=hoy.slice(0,7),pid=ses.proId;
 const pend=S.tur.filter(x=>x.prid==pid&&x.es=="Atendido"&&!S.pag.some(g=>g.tid==x.id));
 const pagM=S.pag.filter(g=>g.prid==pid&&g.f.slice(0,7)==mes),totM=pagM.reduce((a,g)=>a+g.monto,0),totH=pagM.filter(g=>g.f==hoy).reduce((a,g)=>a+g.monto,0);
-const porForma=FORMAS.map(fm=>[fm,pagM.filter(g=>g.forma==fm).reduce((a,g)=>a+g.monto,0)]).filter(x=>x[1]>0),com=comisionMedico(pid,mes);
-return `<div class="stats"><div><b>${money(totH)}</b><span>cobrado hoy</span></div><div><b>${money(totM)}</b><span>cobrado este mes</span></div><div><b>${pend.length}</b><span>consultas por cobrar</span></div><div><b>${money(com.com)}</b><span>a liquidar a Facultativo (${com.pct}%)</span></div></div>
-<p class="mut">Llevás ${com.n} paciente${com.n==1?"":"s"} cobrado${com.n==1?"":"s"} este mes → tramo del ${com.pct}% de comisión para Facultativo.</p>
+const porForma=FORMAS.map(fm=>[fm,pagM.filter(g=>g.forma==fm).reduce((a,g)=>a+g.monto,0)]).filter(x=>x[1]>0),com=comisionMes(pid,mes),saldo=saldoPendiente(pid);
+return `<div class="stats"><div><b>${money(totH)}</b><span>cobrado hoy</span></div><div><b>${money(totM)}</b><span>cobrado este mes</span></div><div><b>${pend.length}</b><span>consultas por cobrar</span></div></div>
+<h2>Tu saldo con Facultativo</h2><div class="card">
+<p class="mut" style="margin-top:0">Igual que en Uber o InDriver: cuando el paciente paga con la seña de Mercado Pago, Facultativo ya se queda con su comisión al momento. Cuando cobrás en efectivo, transferencia o tarjeta por tu cuenta, esa comisión queda pendiente de que se la transfieras vos a Facultativo.</p>
+<div class="row"><div><b style="font:700 22px Fraunces,Georgia,serif">${money(com.comApp)}</b><br><span class="mut" style="font-size:12.5px">ya retenido por Mercado Pago este mes</span></div>
+<div><b style="font:700 22px Fraunces,Georgia,serif">${money(com.comCash)}</b><br><span class="mut" style="font-size:12.5px">generado este mes por cobros en mano (${com.pct}% sobre ${money(com.totalCash)})</span></div>
+<div><b style="font:700 22px Fraunces,Georgia,serif;color:${saldo>S.umbral?"var(--bad)":"var(--ink)"}">${money(saldo)}</b><br><span class="mut" style="font-size:12.5px">saldo total pendiente de transferir</span></div></div>
+${saldo>0?`<button class="btn" style="margin-top:14px" onclick="liquidarSaldo(${pid})">Transferir ${money(saldo)} a Facultativo</button><p class="mut" style="margin-top:8px">Simulado en este prototipo — en producción sale por Mercado Pago o transferencia bancaria real.</p>`:`<p class="mut" style="margin-top:14px">Estás al día. 🎉</p>`}
+${saldo>S.umbral?`<p class="err" style="margin-top:10px">Superaste el saldo máximo permitido (${money(S.umbral)}). Si no lo transferís, Facultativo puede desactivar tu consultorio.</p>`:""}</div>
 <h2>Por cobrar</h2><div class="card tw">${pend.length?`<table><tr><th>Fecha</th><th>Paciente</th><th>Cobertura</th><th>Monto</th><th>Forma de pago</th><th></th></tr>${pend.map(x=>{const p=pac(x.pid);return `<tr><td>${fdate(x.f)}</td><td>${p?nom(p):"—"}</td><td>${p?cobChip(p):""}</td><td><input id="pm_${x.id}" type="number" min="0" step="500" style="max-width:120px" value="${Math.max(0,(p?fee(p.cob,pid):0)-(x.senaMonto||0))}">${x.senaMonto?`<br><small class="mut">Ya pagó seña de ${money(x.senaMonto)}</small>`:""}</td><td><select id="pf_${x.id}">${FORMAS.map(f=>`<option${p&&p.cob&&f=="Cobertura (a facturar)"?" selected":""}>${f}</option>`).join("")}</select></td><td><button class="btn g" onclick="registrarPago(${x.id})">Registrar cobro</button></td></tr>`}).join("")}</table>`:'<div class="empty">No hay consultas atendidas pendientes de cobro.</div>'}</div>
 ${porForma.length?`<h2>Del mes por forma de pago</h2><div class="card tw"><table><tr><th>Forma de pago</th><th>Total</th></tr>${porForma.map(x=>`<tr><td>${x[0]}</td><td>${money(x[1])}</td></tr>`).join("")}</table></div>`:""}
 <h2>Últimos cobros</h2><div class="card tw">${pagM.length?`<table><tr><th>Fecha</th><th>Paciente</th><th>Forma de pago</th><th>Monto</th></tr>${[...S.pag].filter(g=>g.prid==pid).sort((a,b)=>a.f<b.f?1:-1).slice(0,20).map(g=>`<tr><td>${fdate(g.f)}</td><td>${nom(pac(g.pid))}</td><td>${esc(g.forma)}</td><td>${money(g.monto)}</td></tr>`).join("")}</table>`:'<div class="empty">Todavía no se registraron cobros.</div>'}</div>`}
@@ -660,18 +727,22 @@ function vPerf(){const p=pro(ses.proId),i=p.info||{nombre:"",dir:"",hor:"",tel:"
 function saveInfo(){const p=pro(ses.proId);p.info={nombre:v("in_no")||nomPro(p),dir:v("in_di"),hor:v("in_ho"),tel:v("in_te")};save();draw()}
 function saveSec(){const p=pro(ses.proId);p.sec_user=v("in_su");p.sec_pass=v("in_sp");save();draw()}
 function vEst(){const m=selMes||iso(new Date()).slice(0,7),pid=ses.proId,tm=S.tur.filter(x=>x.prid==pid&&x.f.slice(0,7)==m);
-const tot=tm.length,aus=tm.filter(x=>x.es=="Ausente").length,pctAus=tot?Math.round(aus/tot*100):0,ing=S.pag.filter(g=>g.prid==pid&&g.f.slice(0,7)==m).reduce((a,g)=>a+g.monto,0),com=comisionMedico(pid,m);
+const tot=tm.length,aus=tm.filter(x=>x.es=="Ausente").length,pctAus=tot?Math.round(aus/tot*100):0,ing=S.pag.filter(g=>g.prid==pid&&g.f.slice(0,7)==m).reduce((a,g)=>a+g.monto,0);
 const meses=[...Array(6)].map((_,i)=>{const d=new Date();d.setMonth(d.getMonth()-(5-i));return iso(d).slice(0,7)});
 const ingM=meses.map(mm=>S.pag.filter(g=>g.prid==pid&&g.f.slice(0,7)==mm).reduce((a,g)=>a+g.monto,0)),max=Math.max(1,...ingM);
 return `<h2>Estadísticas</h2><div class="card"><label style="flex-basis:180px">Mes<input type="month" value="${m}" onchange="selMes=this.value;draw()"></label></div>
-<div class="stats"><div><b>${tot}</b><span>turnos del mes</span></div><div><b>${pctAus}%</b><span>ausentismo (${aus} de ${tot})</span></div><div><b>${money(ing)}</b><span>ingresos del mes</span></div><div><b>${money(com.com)}</b><span>comisión a Facultativo (${com.pct}%)</span></div></div>
+<div class="stats"><div><b>${tot}</b><span>turnos del mes</span></div><div><b>${pctAus}%</b><span>ausentismo (${aus} de ${tot})</span></div><div><b>${money(ing)}</b><span>ingresos del mes</span></div><div><b>${money(saldoPendiente(pid))}</b><span>saldo pendiente con Facultativo</span></div></div>
 <h2>Ingresos · últimos 6 meses</h2><div class="card">${meses.map((mm,i)=>`<div style="display:flex;align-items:center;gap:10px;margin:6px 0"><span class="mut" style="width:56px;font-size:12.5px">${mm.slice(5)}/${mm.slice(2,4)}</span><div style="flex:1;background:var(--bg);border-radius:5px;overflow:hidden"><div style="width:${ingM[i]/max*100}%;background:var(--cel);height:16px;border-radius:5px"></div></div><span style="width:110px;text-align:right;font-size:13px;font-weight:600">${money(ingM[i])}</span></div>`).join("")}</div>`}
 function vPanel(){const m=selMes||iso(new Date()).slice(0,7);
-const filas=S.pro.map(p=>({p,c:comisionMedico(p.id,m)})),totFact=filas.reduce((a,x)=>a+x.c.total,0),totCom=filas.reduce((a,x)=>a+x.c.com,0),act=S.pro.filter(p=>p.activo).length;
+const filas=S.pro.map(p=>({p,c:comisionMes(p.id,m),saldo:saldoPendiente(p.id)})),totFact=filas.reduce((a,x)=>a+x.c.total,0),totCom=filas.reduce((a,x)=>a+x.c.com,0),totSaldo=filas.reduce((a,x)=>a+x.saldo,0),act=S.pro.filter(p=>p.activo).length;
 return `<h2>Panel Facultativo</h2><div class="card"><label style="flex-basis:180px">Mes<input type="month" value="${m}" onchange="selMes=this.value;draw()"></label></div>
-<div class="stats"><div><b>${act}/${S.pro.length}</b><span>consultorios activos</span></div><div><b>${money(totFact)}</b><span>facturado en toda la red</span></div><div><b>${money(totCom)}</b><span>comisión acumulada del mes</span></div></div>
-<h2>Liquidaciones por consultorio</h2><div class="card tw"><table><tr><th>Consultorio</th><th>Pacientes cobrados</th><th>Facturado</th><th>% aplicado</th><th>Comisión a liquidar</th><th>Estado</th></tr>${filas.map(x=>`<tr><td><b>${nomPro(x.p)}</b><br><small class="mut">${esc(x.p.esp)}</small></td><td>${x.c.n}</td><td>${money(x.c.total)}</td><td>${x.c.pct}%</td><td><b>${money(x.c.com)}</b></td><td><span class="chip ${x.p.activo?"":"sol"}">${x.p.activo?"Activo":"Inactivo"}</span></td></tr>`).join("")}</table></div>
-<p class="mut">La comisión es simulada: en este prototipo no se cobra a nadie de verdad. Una versión real necesita un backend que calcule y cobre estas liquidaciones, por ejemplo descontándolas automáticamente de lo que cada médico cobra por Mercado Pago.</p>`}
+<div class="stats"><div><b>${act}/${S.pro.length}</b><span>consultorios activos</span></div><div><b>${money(totFact)}</b><span>facturado en toda la red</span></div><div><b>${money(totCom)}</b><span>comisión generada del mes</span></div><div><b>${money(totSaldo)}</b><span>saldo total pendiente de cobrar</span></div></div>
+<h2>Liquidaciones por consultorio</h2><div class="card tw"><table><tr><th>Consultorio</th><th>Pacientes cobrados</th><th>Facturado</th><th>% aplicado</th><th>Retenido por MP</th><th>Saldo pendiente</th><th>Estado</th></tr>${filas.map(x=>`<tr><td><b>${nomPro(x.p)}</b><br><small class="mut">${esc(x.p.esp)}</small></td><td>${x.c.n}</td><td>${money(x.c.total)}</td><td>${x.c.pct}%</td><td>${money(x.c.comApp)}</td><td><b style="${x.saldo>S.umbral?"color:var(--bad)":""}">${money(x.saldo)}</b>${x.saldo>S.umbral?` <span class="warn">excede el tope</span>`:""}</td><td><span class="chip ${x.p.activo?"":"sol"}">${x.p.activo?"Activo":"Inactivo"}</span><br><button class="link" style="margin-top:4px" onclick="toggleActivo(${x.p.id})">${x.p.activo?"Desactivar":"Activar"}</button></td></tr>`).join("")}</table></div>
+<details class="card"><summary>Registrar una liquidación recibida (transferencia manual)</summary><div class="row">
+<label style="flex-basis:220px">Consultorio<select id="liq_pid">${proOpts()}</select></label><label style="flex-basis:160px">Monto recibido<input id="liq_m" type="number" min="0" step="500"></label>
+<button class="btn g" onclick="registrarLiq()">Registrar</button></div><p class="err" id="err"></p></details>
+<details class="card"><summary>Tope de saldo antes de sugerir bloqueo</summary><div class="row"><label style="flex-basis:200px">Monto tope<input type="number" min="0" step="1000" value="${S.umbral}" onchange="S.umbral=+this.value||0;save();draw()"></label></div></details>
+<p class="mut">La comisión y el saldo son simulados: en este prototipo nadie transfiere plata de verdad. Una versión real necesita un backend que calcule esto automáticamente y, cuando el pago es por Mercado Pago, retenga la comisión antes de acreditarle el resto al médico — igual que hace Uber con los viajes pagados con tarjeta.</p>`}
 draw();
 </script>
 </body>
