@@ -86,8 +86,19 @@ details.card summary{margin:-2px 0 0}details.card[open] summary{margin-bottom:14
 .sevgrid td{padding:8px 6px;border-top:1px solid var(--line)}
 .sevgrid td.lbl{text-align:left;white-space:normal;min-width:150px}
 .sevgrid td.opt{text-align:center}
-.doc{background:var(--surf);border:1px solid var(--line);border-radius:var(--rad);padding:20px;font-size:14.5px;line-height:1.7;white-space:pre-line}
-.doc h4{margin:0 0 10px;font:700 16px Fraunces,Georgia,serif;color:var(--cel)}
+.docbox{border:1px solid var(--ink);border-radius:8px;padding:14px 16px;margin-bottom:18px;font-size:14px;line-height:2.1}
+.docbody{font-size:13.5px;line-height:1.6;column-count:1;column-gap:28px}
+@media(min-width:680px){.docbody{column-count:2}}
+.docbody h4{color:var(--cel);font:700 12.5px Figtree,sans-serif;text-transform:uppercase;letter-spacing:.03em;margin:14px 0 4px;break-after:avoid}
+.docbody h4:first-child{margin-top:0}
+.docbody p{margin:0 0 10px}
+.docbody ul{margin:2px 0 10px 18px;padding:0}
+.docbody li{margin:3px 0}
+.docsig{border-top:2px solid var(--ink);margin-top:22px;padding-top:14px;font-size:13.5px}
+.sigrow{display:flex;gap:30px;margin-top:22px;flex-wrap:wrap}
+.sigrow div{flex:1 1 170px;border-top:1px solid var(--ink);padding-top:6px;font-size:12.5px;color:var(--mut)}
+.idbox{display:flex;gap:18px;flex-wrap:wrap;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:13px}
+.idbox b{color:var(--mut);font-weight:600}
 </style>
 </head>
 <body>
@@ -427,8 +438,8 @@ function seed(){const h=iso(new Date());return{n:20,sin:{},
 pro:[{id:1,no:"Ornella",ap:"Duarte",esp:"Especialista en Terapia del Dolor",mt:"MN",mn:"54321",user:"oduarte",pass:"1234",sec_user:"sec_oduarte",sec_pass:"1234",activo:true,info:{nombre:"Consultorio Dra. Duarte · Terapia del Dolor",dir:"Av. Corrientes 1234, CABA",hor:"Lun a vie de 9 a 18 h",tel:"+54 11 4000-0001"}},
 {id:2,no:"Martín",ap:"Sosa",esp:"Traumatología",mt:"MP",mn:"22110",user:"msosa",pass:"1234",sec_user:"sec_msosa",sec_pass:"1234",activo:true,info:{nombre:"Consultorio Dr. Sosa · Traumatología",dir:"Av. Santa Fe 4321, CABA",hor:"Lun a vie de 10 a 19 h",tel:"+54 11 4000-0002"}}],cert:[],pag:[],cons:[],rec:[],
 fees:{1:{__particular:40000},2:{__particular:35000}},tiers:[{max:30,pct:5},{max:100,pct:4},{max:99999,pct:3}],liq:[],umbral:15000,esc:[],
-consTpl:[{id:1,nombre:"Uso de medicamentos controlados a largo plazo (dolor crónico)",cuerpo:"Se me ha explicado que el tratamiento de mi dolor crónico incluye medicamentos controlados (opioides u otros fármacos de prescripción controlada). Entiendo que pueden aliviar el dolor y mejorar mi funcionalidad diaria, aunque los síntomas pueden no desaparecer por completo y el tratamiento puede ajustarse con el tiempo.\n\nFui informado/a de los riesgos: uso inadecuado o por terceros, posibilidad de sobredosis, efectos secundarios (somnolencia, estreñimiento, malestar digestivo, picazón, enlentecimiento respiratorio), dependencia física, síntomas de abstinencia si se suspende bruscamente, tolerancia y riesgo de adicción (mayor si tengo antecedentes personales o familiares de consumo problemático de sustancias).\n\nMe comprometo a tomar la medicación solo como fue indicada, no compartirla con terceros, informar sobre otros medicamentos que tome y avisar ante cualquier efecto adverso. Si estoy embarazada o busco un embarazo, lo informaré a mi médico."},
-{id:2,nombre:"Procedimiento intervencionista (bloqueos / infiltraciones)",cuerpo:"Se me explicó el procedimiento propuesto para mi dolor (bloqueo nervioso, infiltración articular o facetaria u otro procedimiento intervencionista), en qué consiste, cómo se realiza (habitualmente con anestesia local y, cuando corresponde, guía por imágenes) y su duración aproximada.\n\nObjetivo: disminuir el dolor y mejorar mi funcionalidad. Alternativas razonables: tratamiento farmacológico u otras terapias no invasivas. Si no se realiza: persistencia o menor mejoría del dolor.\n\nRiesgos informados: molestias locales en el sitio de punción, episodio de mareo o lipotimia (síncope vasovagal) y, de forma poco frecuente, complicaciones más serias asociadas a la técnica. Existen riesgos particulares según mis antecedentes, que fueron conversados con mi médico.\n\nDeclaro haber sido informado/a de ventajas, inconvenientes y alternativas, haber podido preguntar lo que consideré necesario, y que puedo revocar este consentimiento en cualquier momento antes de realizarse."}],
+consTpl:[{id:1,nombre:"Uso de medicamentos controlados a largo plazo (dolor crónico)",cuerpo:"## Razones para el uso de estos medicamentos\nLos medicamentos controlados (opioides u otros fármacos de prescripción controlada) pueden reducir mi dolor crónico y mejorar mi capacidad de realizar actividades diarias. Los elegimos porque otros tratamientos no me ayudaron lo suficiente.\n- Mis síntomas pueden mejorar, aunque es posible que no desaparezcan por completo\n- Puedo necesitar más estudios para elegir el mejor tratamiento\n- Mi médico puede cambiar el tratamiento para que sea el mejor para mí\n\n## Riesgo de uso incorrecto o por terceros\n- Son medicamentos muy potentes y pueden ser peligrosos si no los tomo como me indicaron\n- Nadie más que yo debe tomar mis medicamentos\n- Pueden ocasionar una sobredosis o la muerte\n\n## Efectos secundarios\n- Somnolencia o cansancio, estreñimiento, malestar estomacal, picazón en la piel\n- Respiración lenta o poco profunda; en caso de sobredosis, puede dejar de respirar\n- No debo manejar maquinaria pesada hasta saber cómo me afecta el medicamento\n- Debo avisar a mi médico si tomo otros medicamentos, por posibles interacciones\n\n## Dependencia física y abstinencia\nMi cuerpo se puede volver dependiente de estos medicamentos; esto es normal. Si los reduzco o suspendo bruscamente puedo tener síntomas de abstinencia (dolor de estómago, nerviosismo, diarrea, taquicardia, temblor, secreción nasal). Son incómodos pero tratables, y los medicamentos deberían reducirse gradualmente, no de golpe.\n\n## Tolerancia y adicción\nMi cuerpo puede volverse tolerante y necesitar más dosis con el tiempo. Los opioides pueden causar adicción, con mayor riesgo si tengo antecedentes personales o familiares de consumo problemático de sustancias; es importante que se lo informe a mi médico.\n\n## Embarazo\nSi estoy embarazada o busco un embarazo, debo informarlo a mi médico: el bebé podría nacer con dependencia a estos medicamentos."},
+{id:2,nombre:"Procedimiento intervencionista (bloqueos / infiltraciones)",cuerpo:"## Identificación y descripción del procedimiento\n- Consiste en la introducción de un medicamento (anestésico local o corticoide) en la zona a tratar (bloqueo nervioso, infiltración articular o facetaria u otro procedimiento intervencionista)\n- Es una técnica habitualmente poco dolorosa, aunque puede resultar incómoda\n- Cuando corresponde, se utiliza guía por imágenes (radioscopia/ecografía) para localizar el sitio de punción\n- Puede ser diagnóstico (efecto pasajero, para localizar el origen del dolor) o terapéutico (de mayor duración)\n- Suele durar entre 20 y 30 minutos, con anestesia local\n\n## Objetivos y beneficios esperados\n- Mejoría del dolor y de la funcionalidad\n\n## Alternativas razonables\n- Tratamiento farmacológico por vía oral u otras terapias no invasivas\n\n## Consecuencias si no se realiza\n- Persistencia o menor mejoría del dolor\n\n## Riesgos\n- Molestias locales en el sitio de punción, que ceden en pocas horas con analgésicos comunes\n- Síncope vasovagal (mareo, sudoración, sensación de desvanecimiento), no grave y tratable\n- De forma poco frecuente, otras complicaciones más serias asociadas a la técnica\n- Existen riesgos particulares según mis antecedentes, que fueron conversados con mi médico\n\n## Contraindicaciones\n- No se podrá realizar si existen trastornos de la coagulación o infección en la zona de punción"}],
 cus:["OSDE","Swiss Medical","Galeno","Medifé","Sancor Salud","PAMI (INSSJP)","IOMA"].map(n=>({n,r:"",s:"Prepaga u otra"})),
 pac:[{id:1,no:"Lucía",ap:"Fernández",td:"DNI",nd:"30456789",sx:"Femenino",nac:"1985-03-14",tp:"+549",tn:"1155550142",em:"lucia@mail.com",cob:"OSDE",plan:"310",afi:"12345678901",ant:{}},
 {id:2,no:"Ricardo",ap:"Gómez",td:"DNI",nd:"18234567",sx:"Masculino",nac:"1962-09-02",tp:"+549",tn:"3515550177",em:"ricardo@mail.com",cob:"PAMI (INSSJP)",plan:"",afi:"15182345670",ant:{per:"Hipertensión arterial.",fam:"Padre con ACV.",rel:"Latigazo cervical con hernia C5-C6 posterolateral hace 10 años (accidente automovilístico). Sin cirugía; inmovilización 1 año."}},
@@ -632,9 +643,10 @@ function bodySvg(){return `<svg viewBox="0 0 220 240" width="100%" style="max-wi
 <text x="55" y="228" text-anchor="middle" font-size="11" fill="var(--mut)">De frente</text>
 <text x="165" y="228" text-anchor="middle" font-size="11" fill="var(--mut)">De espaldas</text>
 </svg>`}
+function idBox(pid){const p=pac(pid);return `<div class="idbox"><span><b>Paciente:</b> ${p?esc(`${p.ap}, ${p.no}`):"—"}</span><span><b>Documento:</b> ${p?esc(p.td)+" "+docFmt(p):"—"}</span><span><b>Fecha:</b> ${fdate(iso(new Date()))}</span></div>`}
 function painDetectHtml(pid,prid){const ya=S.esc.find(e=>e.pid==pid&&e.tipo=="PainDETECT");
 if(ya)return `<p class="mut">Ya completado el ${fdate(ya.f)} · puntaje <b>${ya.score}/35</b> · ${ya.interp}${ya.data&&ya.data.zona?` · zona: ${esc(ya.data.zona)}`:""}</p>`;
-return `<div class="formhdr"><b>painDETECT</b><span>Cuestionario del dolor</span></div>
+return `<div class="formhdr"><b>painDETECT</b><span>Cuestionario del dolor</span></div>${idBox(pid)}
 ${PD_NRS.map((l,i)=>nrsRow("pdn"+i,l)).join("")}
 <p class="step" style="margin-top:20px">Marque su principal zona de dolor</p>
 ${bodySvg()}
@@ -651,7 +663,7 @@ const interp=s<13?"componente neuropático poco probable":s<=18?"resultado ambig
 S.esc.push({id:S.n++,pid,prid,tipo:"PainDETECT",f:iso(new Date()),quien:"paciente",score:s,max:35,interp,data:{zona:r("pdzona"),irradia:r("pdirr"),patron:r("pdpat")}});save();draw()}
 function slanssHtml(pid,prid){const ya=S.esc.find(e=>e.pid==pid&&e.tipo=="S-LANSS");
 if(ya)return `<p class="mut">Ya completado el ${fdate(ya.f)} · puntaje <b>${ya.score}/24</b> · ${ya.interp}</p>`;
-return `<div class="formhdr"><b>S-LANSS</b><span>Evaluación de signos y síntomas neuropáticos de Leeds</span></div>
+return `<div class="formhdr"><b>S-LANSS</b><span>Evaluación de signos y síntomas neuropáticos de Leeds</span></div>${idBox(pid)}
 ${nrsRow("sln","Intensidad del dolor durante la última semana")}
 <p class="step" style="margin-top:18px">Preguntas sobre su dolor</p>
 ${SL_IT.map((it,i)=>`<div class="qrow"><div class="qtxt"><b>${i+1}</b>${it[0]}</div><div class="yn"><label><input type="radio" name="sl${i}" value="${it[1]}">Sí</label><label><input type="radio" name="sl${i}" value="0">No</label></div></div>`).join("")}
@@ -660,12 +672,13 @@ function guardarSL(pid,prid){let s=0;for(let i=0;i<SL_IT.length;i++){const x=r("
 const interp=s>=12?"sugiere mecanismo de dolor predominantemente neuropático":"mecanismo neuropático poco probable";
 S.esc.push({id:S.n++,pid,prid,tipo:"S-LANSS",f:iso(new Date()),quien:"paciente",score:s,max:24,interp});save();draw()}
 function dnRow(i){return `<div class="qrow"><div class="qtxt"><b>${i+1}</b>${DN4_IT[i]}</div><div class="yn"><label><input type="radio" name="dn${i}" value="1">Sí</label><label><input type="radio" name="dn${i}" value="0">No</label></div></div>`}
-function dn4Html(){return `<div class="formhdr"><b>Cuestionario DN4</b><span>Diagnóstico de dolor neuropático · lo completa el profesional</span></div>
+function dn4Html(){return `<div class="formhdr"><b>Cuestionario DN4</b><span>Diagnóstico de dolor neuropático · lo completa el profesional</span></div>${idBox(selPac)}
 <p class="step">Paso 1 · Pregunte al paciente</p><p class="mut" style="margin:0 0 4px">¿Tiene el dolor una o más de estas características?</p>${[0,1,2].map(dnRow).join("")}
 <p class="mut" style="margin:14px 0 4px">¿Se asocia el dolor a uno o más de estos síntomas en la misma zona?</p>${[3,4,5,6].map(dnRow).join("")}
 <p class="step">Paso 2 · Examine al paciente</p><p class="mut" style="margin:0 0 4px">¿El examen físico muestra alguna de estas características?</p>${[7,8].map(dnRow).join("")}
 <p class="mut" style="margin:14px 0 4px">¿El dolor se causa o incrementa por esto?</p>${[9].map(dnRow).join("")}
-<p class="err" id="err" style="margin-top:14px"></p><button class="btn g" onclick="guardarDN4(${selPac})">Guardar DN4</button>`}
+<div class="docbox" style="text-align:center;margin-top:16px">PUNTUACIÓN TOTAL <b>___ / 10</b> · se calcula al guardar</div>
+<p class="err" id="err"></p><button class="btn g" onclick="guardarDN4(${selPac})">Guardar DN4</button>`}
 function guardarDN4(pid){let s=0;for(let i=0;i<DN4_IT.length;i++){const x=r("dn"+i);if(x===undefined||x===""){err("Respondé las 10 preguntas.");return}s+=+x}
 const interp=s>=4?"sugiere dolor neuropático (sensibilidad 80,5%, especificidad 88,4%)":"no sugiere dolor neuropático";
 S.esc.push({id:S.n++,pid,prid:ses.proId,tipo:"DN4",f:iso(new Date()),quien:"medico",score:s,max:10,interp});save();draw()}
@@ -678,15 +691,28 @@ return `<h2>Dolor</h2><div class="card"><label>Paciente<select onchange="selPac=
 ${esc_.filter(e=>e.tipo!="DN4").length?"":'<div class="empty">Todavía no completó ninguna.</div>'}</div>
 <div class="card"><h3 style="margin-top:0">Historial</h3>${esc_.length?esc_.map(e=>`<div class="evo"><small>${fdate(e.f)} · ${e.quien=="paciente"?"completado por el paciente":"completado por "+esc(nomPro(pro(e.prid)))}</small><br><b>${e.tipo}</b> — ${e.score}/${e.max}<br>${esc(e.interp)}</div>`).join(""):'<div class="empty">Sin escalas registradas.</div>'}</div>`}
 function ctplPick(){const v_=document.getElementById("co_tp").value;if(v_.startsWith("tpl:")){const t=S.consTpl.find(x=>x.id==+v_.slice(4));if(t)$("co_tx").value=t.cuerpo}}
-function vConsTpl(){return `<h2>Consentimientos</h2><p class="mut">Biblioteca de plantillas de consentimiento informado. Al generar un consentimiento para un paciente (desde su historia clínica), podés elegir una de estas y se precarga el texto para ajustarlo caso por caso.</p>
+function mdToHtml(t){const lines=(t||"").split("\n");let h="",ul=false;
+for(const raw of lines){const l=raw.trim();
+if(!l){if(ul){h+="</ul>";ul=false}continue}
+if(l.startsWith("## ")){if(ul){h+="</ul>";ul=false}h+=`<h4>${esc(l.slice(3))}</h4>`}
+else if(l.startsWith("- ")){if(!ul){h+="<ul>";ul=true}h+=`<li>${esc(l.slice(2))}</li>`}
+else{if(ul){h+="</ul>";ul=false}h+=`<p>${esc(l)}</p>`}}
+if(ul)h+="</ul>";return h}
+function consDocFrame(titulo,cuerpo,fill){const pac_=fill?esc(fill.paciente):"_______________________________",prov=fill?esc(fill.profesional):"_______________________________",mot=fill?esc(fill.motivo||"—"):"________________________________________________";
+return `<div class="formhdr"><b>Consentimiento informado</b><span>${esc(titulo)}</span></div>
+<div class="docbox">Yo, <b>${pac_}</b> (paciente), y <b>${prov}</b> (profesional), hemos acordado el tratamiento o procedimiento descripto a continuación.<br>Motivo: <b>${mot}</b></div>
+<div class="docbody">${mdToHtml(cuerpo)}</div>
+<div class="docsig"><p>Entiendo este formulario. He podido hacer preguntas, las cuales me fueron respondidas. Se me ha ofrecido una copia. ${fill?"Doy mi consentimiento para lo descripto arriba.":""}</p>
+${fill?`<p style="margin-top:10px"><span class="chip">Firmado por ${esc(fill.firma)} el ${fdate(fill.fecha)}</span></p>`:`<div class="sigrow"><div>Firma del paciente</div><div>Firma del profesional</div><div>Fecha</div></div>`}</div>`}
+function vConsTpl(){return `<h2>Consentimientos</h2><p class="mut">Biblioteca de plantillas de consentimiento informado. Usá ## antes de un subtítulo y - antes de una viñeta para darle formato. Al generar un consentimiento para un paciente (desde su historia clínica), elegís una de estas y se precarga el texto para ajustarlo caso por caso.</p>
 <details class="card"><summary>Nueva plantilla</summary><label>Nombre<input id="ct_no" placeholder="Ej: Infiltración de hombro"></label>
-<label style="margin-top:10px">Texto del consentimiento<textarea id="ct_cu" style="min-height:140px"></textarea></label>
+<label style="margin-top:10px">Texto del consentimiento (## subtítulo, - viñeta)<textarea id="ct_cu" style="min-height:160px"></textarea></label>
 <p class="err" id="err"></p><button class="btn" style="margin-top:8px" onclick="addConsTpl()">Guardar plantilla</button></details>
-<div class="card">${S.consTpl.map(t=>`<details style="margin-bottom:14px"><summary>📋 ${esc(t.nombre)}</summary><div class="doc" style="margin-top:10px"><h4>${esc(t.nombre)}</h4>${esc(t.cuerpo)}</div><button class="link" style="margin-top:8px" onclick="delConsTpl(${t.id})">Eliminar plantilla</button></details>`).join("")||'<div class="empty">Todavía no hay plantillas.</div>'}</div>`}
+<div class="card">${S.consTpl.map(t=>`<details style="margin-bottom:14px"><summary>📋 ${esc(t.nombre)}</summary><div style="margin-top:12px">${consDocFrame(t.nombre,t.cuerpo,null)}</div><button class="link" style="margin-top:8px" onclick="delConsTpl(${t.id})">Eliminar plantilla</button></details>`).join("")||'<div class="empty">Todavía no hay plantillas.</div>'}</div>`}
 function addConsTpl(){if(!v("ct_no")||!v("ct_cu"))return err("Completá el nombre y el texto de la plantilla.");S.consTpl.push({id:S.n++,nombre:v("ct_no"),cuerpo:v("ct_cu")});save();draw()}
 function delConsTpl(id){S.consTpl=S.consTpl.filter(t=>t.id!=id);save();draw()}
-function consList(pid){const l=S.cons.filter(c=>c.pid==pid).sort((a,b)=>a.f<b.f?1:-1);
-return l.length?l.map(c=>`<details style="margin-bottom:12px"><summary>${esc(c.tipo)} · ${fdate(c.f)}</summary><div class="doc" style="margin-top:10px"><h4>${esc(c.tipo)}</h4><p class="mut" style="margin:0 0 10px">${fdate(c.f)} · informado por ${esc(nomPro(pro(c.prid)))}</p>${esc(c.tx)}</div><p style="margin-top:8px"><span class="chip">Firmado por ${esc(c.firma)}</span></p></details>`).join(""):'<div class="empty">Sin consentimientos registrados.</div>'}
+function consList(pid){const l=S.cons.filter(c=>c.pid==pid).sort((a,b)=>a.f<b.f?1:-1),p=pac(pid);
+return l.length?l.map(c=>`<details style="margin-bottom:12px"><summary>${esc(c.tipo)} · ${fdate(c.f)}</summary><div style="margin-top:12px">${consDocFrame(c.tipo,c.tx,{paciente:`${p.ap}, ${p.no}`,profesional:nomPro(pro(c.prid)).replace(/^Dr\.\/Dra\. /,""),motivo:c.tipo,firma:c.firma,fecha:c.f})}</div></details>`).join(""):'<div class="empty">Sin consentimientos registrados.</div>'}
 function addCons_(pid){if(!v("co_tx"))return $("err4").textContent="Describí el procedimiento o tratamiento.";
 if(!$("co_ck").checked)return $("err4").textContent="Marcá que el paciente fue informado y acepta.";
 if(!v("co_fi"))return $("err4").textContent="Falta la firma (nombre y apellido) del paciente.";
