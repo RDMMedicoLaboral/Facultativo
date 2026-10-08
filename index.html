@@ -30,8 +30,18 @@ label{display:flex;flex-direction:column;font-size:12.5px;font-weight:600;color:
 input,select,textarea{font:400 15px Figtree,inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:9px 11px;width:100%;transition:border-color .15s,background .15s}
 input:hover,select:hover,textarea:hover{border-color:var(--mut)}
 input:focus,select:focus,textarea:focus{background:var(--surf)}
-textarea{min-height:56px;resize:vertical;font-family:Figtree,inherit}
-.card>label,details.card>label{max-width:560px}
+textarea{min-height:40px;resize:vertical;font-family:Figtree,inherit}
+.card>label,details.card>label{max-width:440px}
+nav details.navmore{position:relative;display:inline-block}
+nav details.navmore summary{list-style:none;cursor:pointer;color:#9FB6CB;font:500 14.5px Figtree,sans-serif;padding:10px 14px 12px;border-bottom:3px solid transparent}
+nav details.navmore summary::-webkit-details-marker{display:none}
+nav details.navmore summary:hover{color:#fff}
+nav details.navmore summary.on{color:#fff;border-color:var(--sol);font-weight:600}
+nav details[open].navmore summary{color:#fff}
+nav .navmenu{position:absolute;top:100%;left:0;background:var(--surf);border:1px solid var(--line);border-radius:8px;box-shadow:var(--sh);padding:6px;min-width:190px;z-index:20;display:flex;flex-direction:column}
+nav .navmenu button{background:none;border:0;text-align:left;padding:9px 12px;color:var(--ink);font:500 14px Figtree,sans-serif;border-radius:6px;cursor:pointer;white-space:nowrap}
+nav .navmenu button:hover{background:var(--bg)}
+nav .navmenu button.on{color:var(--cel);font-weight:700}
 input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--cel);outline-offset:2px}
 .btn{background:var(--cel);color:#fff;border:0;border-radius:7px;padding:10px 18px;font:600 14.5px Figtree,sans-serif;cursor:pointer;box-shadow:0 1px 2px rgba(21,43,64,.15);transition:filter .15s,transform .1s}
 .btn:hover{filter:brightness(1.08)}.btn:active{transform:translateY(1px)}
@@ -95,7 +105,7 @@ details.card summary{margin:-2px 0 0}details.card[open] summary{margin-bottom:14
 .docbody ul{margin:2px 0 10px 18px;padding:0}
 .docbody li{margin:3px 0}
 .docsig{border-top:2px solid var(--ink);margin-top:22px;padding-top:14px;font-size:13.5px}
-.sigrow{display:flex;gap:30px;margin-top:22px;flex-wrap:wrap}
+.sigrow{display:flex;gap:30px;margin-top:70px;flex-wrap:wrap}
 .sigrow div{flex:1 1 170px;border-top:1px solid var(--ink);padding-top:6px;font-size:12.5px;color:var(--mut)}
 .idbox{display:flex;gap:18px;flex-wrap:wrap;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:13px}
 .idbox b{color:var(--mut);font-weight:600}
@@ -110,7 +120,12 @@ details.card summary{margin:-2px 0 0}details.card[open] summary{margin-bottom:14
 <footer>Prototipo de demostración con datos ficticios. Una versión real debe cumplir la Ley 26.529 (historia clínica), la Ley 25.326 (protección de datos personales) y la Ley 27.553 (recetas electrónicas y teleasistencia).</footer>
 <script>
 const TD=["DNI","CI","Pasaporte","Libreta Cívica","Libreta de Enrolamiento"],TE=["Ecografía","Radiografía","Tomografía","Resonancia (RMN)","Laboratorio","Otro"],
-VIT=[["tas","TA sistólica (mmHg)"],["tad","TA diastólica (mmHg)"],["fc","Frec. cardíaca (lpm)"],["fr","Frec. resp. (rpm)"],["tm","Temperatura (°C)"],["pe","Peso (kg)"],["tl","Talla (m)"]],
+VIT=[["tas","TA sistólica (mmHg)"],["tad","TA diastólica (mmHg)"],["fc","Frec. cardíaca (lpm)"],["fr","Frec. resp. (rpm)"],["tm","Temperatura (°C)"],["sat","Sat. O₂ (%)"],["pe","Peso (kg)"],["tl","Talla (m)"],["pa","Perím. abdominal (cm)"]],
+ANAM=["General (fiebre, astenia, peso)","Piel y faneras","Cardiovascular","Respiratorio","Digestivo","Genitourinario","Neurológico","Osteomuscular (SOMA)","TCS (edema, tumoraciones)"],
+EXGE=["Estado de conciencia","Actitud","Decúbito","Marcha","Facie"],
+EXSEG=["Cabeza y cuello","Ap. respiratorio","Mamas","Ap. cardiovascular","Abdomen","Ap. genitourinario","Sistema nervioso"],
+APAT=["Diabetes","Hipertensión arterial","Cardiopatía","Asma","Tabaquismo","Chagas","Artrosis","Artritis reumatoidea","Hemiplejía","Cirrosis"],
+AIMP=["Marcapasos","Usa prótesis","Reemplazo de cadera derecha","Reemplazo de cadera izquierda"],
 TABS_SUPER=[["panel","Panel Facultativo"],["cons","Consultorios"]],
 TABS_MED=[["hoy","Hoy"],["pac","Pacientes"],["tur","Turnos"],["hc","Historia clínica"],["ctpl","Consentimientos"],["cob","Coberturas"],["caja","Caja"],["est","Estadísticas"],["perf","Mi consultorio"]],
 TABS_SEC=[["hoy","Hoy"],["pac","Pacientes"],["tur","Turnos"]],
@@ -489,8 +504,11 @@ return({superadmin:TABS_SUPER,secretaria:TABS_SEC})[s.rol]}
 function draw(){
 if(!ses&&tab!="por"){$("nav").innerHTML="";$("app").innerHTML=vLogin();return}
 if(!ses){$("nav").innerHTML=`<button onclick="tab='hoy';draw()">← Volver</button>`;$("app").innerHTML=vPor();return}
-const tabs=tabsFor(ses);
-$("nav").innerHTML=tabs.map(t=>`<button class="${t[0]==tab?"on":""}" onclick="go('${t[0]}')">${t[1]}</button>`).join("")+`<button onclick="logout()">Salir · ${esc(ses.nombre)}</button>`;
+const tabs=tabsFor(ses),pri=ses.rol=="medico"?tabs.slice(0,4):tabs,sec=ses.rol=="medico"?tabs.slice(4):[];
+const priHtml=pri.map(t=>`<button class="${t[0]==tab?"on":""}" onclick="go('${t[0]}')">${t[1]}</button>`).join("");
+const curSec=sec.find(t=>t[0]==tab);
+const secHtml=sec.length?`<details class="navmore"><summary class="${curSec?"on":""}">${curSec?curSec[1]:"Más"} ▾</summary><div class="navmenu">${sec.map(t=>`<button class="${t[0]==tab?"on":""}" onclick="go('${t[0]}')">${t[1]}</button>`).join("")}</div></details>`:"";
+$("nav").innerHTML=priHtml+secHtml+`<button onclick="logout()">Salir · ${esc(ses.nombre)}</button>`;
 $("app").innerHTML=({hoy:vHoy,pac:vPac,tur:vTur,hc:vHc,ctpl:vConsTpl,dolor:vDolor,cob:vCob,cons:vCons,caja:vCaja,est:vEst,perf:vPerf,panel:vPanel,por:vPor})[tab]()}
 const pacOpts=(s,list)=>(list||S.pac).map(p=>`<option value="${p.id}"${p.id==s?" selected":""}>${nom(p)} · ${esc(p.td)} ${docFmt(p)}</option>`).join(""),
 cobOpts=()=>S.cob.map(c=>`<option>${esc(c.n)}</option>`).join("");
@@ -514,7 +532,11 @@ function pacFields(){return `<p class="req">Los campos con <b>*</b> son obligato
 <label style="flex:0 1 120px">Código de país *<input id="tp" value="+549"></label><label>Celular (10 dígitos) *<input id="tn" inputmode="numeric" maxlength="10" placeholder="1168488526"></label>
 <label>E-mail *<input id="em" type="email"></label>
 <fieldset><legend>Cobertura médica *</legend><label class="rad"><input type="radio" name="cb" value="no" checked onchange="cobT()">Sin cobertura / Particular</label><label class="rad"><input type="radio" name="cb" value="si" onchange="cobT()">Agregar cobertura</label></fieldset></div>
-<div class="row" id="cbx" hidden style="margin-top:10px"><label>Obra social o prepaga * (nombre, sigla o RNOS)<input id="co" list="cl" autocomplete="off"></label><datalist id="cl">${ALL().map(c=>`<option value="${esc(c.n)}">${esc(c.r||c.s)}</option>`).join("")}</datalist><label>Plan<input id="pl" placeholder="310, Plata, Oro…"></label><label>Nro. de afiliado * (aprox. 11 dígitos)<input id="af" inputmode="numeric"></label></div>`}
+<div class="row" id="cbx" hidden style="margin-top:10px"><label>Obra social o prepaga * (nombre, sigla o RNOS)<input id="co" list="cl" autocomplete="off"></label><datalist id="cl">${ALL().map(c=>`<option value="${esc(c.n)}">${esc(c.r||c.s)}</option>`).join("")}</datalist><label>Plan<input id="pl" placeholder="310, Plata, Oro…"></label><label>Nro. de afiliado * (aprox. 11 dígitos)<input id="af" inputmode="numeric"></label></div>
+<details style="margin-top:10px"><summary style="font-size:13px">Datos opcionales (estado civil, domicilio, derivación…)</summary><div class="row" style="margin-top:8px">
+<label style="flex:0 1 160px">Estado civil<input id="ec"></label><label>Ocupación<input id="oc"></label><label style="flex:0 1 140px">Teléfono fijo<input id="tf_"></label>
+<label>Domicilio<input id="dm"></label><label style="flex:0 1 160px">Localidad<input id="lo"></label><label style="flex:0 1 100px">CP<input id="cp"></label>
+<label>Profesional derivante<input id="dp"></label><label style="flex:0 1 160px">Matrícula del derivante<input id="dm2" placeholder="MN/MP 12345"></label></div></details>`}
 function cobT(){$("cbx").hidden=r("cb")!="si"}
 function readPac(){const nd=v("nd").replace(/[.\s-]/g,""),td=v("td"),tn=v("tn").replace(/\D/g,""),si=r("cb")=="si";let e="";
 if(!v("no")||!v("ap"))e="Completá nombre y apellido.";
@@ -526,7 +548,8 @@ else if(!/^\S+@\S+\.\S+$/.test(v("em")))e="Ingresá un e-mail válido.";
 else if(si&&!cobF(v("co")))e="Esa cobertura no figura en la lista. Agregala en la pestaña Coberturas.";
 else if(si&&!/^\d{6,14}$/.test(v("af").replace(/\D/g,"")))e="El nro. de afiliado debe tener solo dígitos (aprox. 11).";
 if(e)return{e};const ex=S.pac.find(p=>p.td==td&&p.nd==nd);
-return{ex,p:{id:S.n++,no:v("no"),ap:v("ap"),td,nd,sx:r("sx"),nac:v("nac"),tp:v("tp"),tn,em:v("em"),cob:si?cobF(v("co")).n:"",plan:si?v("pl"):"",afi:si?v("af").replace(/\D/g,""):"",ant:{}}}}
+return{ex,p:{id:S.n++,no:v("no"),ap:v("ap"),td,nd,sx:r("sx"),nac:v("nac"),tp:v("tp"),tn,em:v("em"),cob:si?cobF(v("co")).n:"",plan:si?v("pl"):"",afi:si?v("af").replace(/\D/g,""):"",
+ec:v("ec"),oc:v("oc"),tf_:v("tf_"),dm:v("dm"),lo:v("lo"),cp:v("cp"),dp:v("dp"),dm2:v("dm2"),ant:{}}}}
 const err=m=>{$("err").textContent=m};
 function addPac(){const x=readPac();if(x.e)return err(x.e);if(x.ex)return err("Ya existe un paciente con ese documento.");S.pac.push(x.p);save();draw()}
 function vPac(){const q=filtro.toLowerCase().replace(/\./g,""),base=misPac(),l=base.filter(p=>!q||`${p.ap} ${p.no}`.toLowerCase().includes(q)||p.nd.toLowerCase().includes(q));
@@ -555,24 +578,45 @@ function vHc(){const base=misPac();if(!base.length)return `<h2>Historia clínica
 if(!base.some(x=>x.id==selPac))selPac=base[0].id;const p=pac(selPac),a=p.ant||{},ev=(S.evo||[]).filter(e=>e.pid==selPac).sort((x,y)=>x.f<y.f?1:-1);
 return `<h2>Historia clínica</h2><div class="card"><label>Paciente<select onchange="selPac=this.value;draw()">${pacOpts(selPac,base)}</select></label>
 <p style="margin:12px 0 0"><b>${nom(p)}</b> · ${esc(p.td)} ${docFmt(p)} · ${edad(p.nac)} años · ${esc(p.sx)}</p></div>
-<details class="card" open><summary>Antecedentes</summary><label>Personales<textarea id="a1">${esc(a.per)}</textarea></label><label style="margin-top:10px">Familiares<textarea id="a2">${esc(a.fam)}</textarea></label>
-<label style="margin-top:10px">Relacionados con la enfermedad actual<textarea id="a3" placeholder="Ej: latigazo cervical con hernia C5-C6 posterolateral hace 10 años; sin cirugía, inmovilización 1 año">${esc(a.rel)}</textarea></label><button class="btn g" style="margin-top:10px" onclick="saveAnt()">Guardar antecedentes</button></details>
+<details class="card" open><summary>Antecedentes</summary>
+<p class="step" style="margin-top:0">Antecedentes patológicos frecuentes</p>
+<div class="yn" style="flex-wrap:wrap">${APAT.map((x,i)=>`<label><input type="checkbox" id="ap_${i}" ${(a.pat||[]).includes(x)?"checked":""}>${x}</label>`).join("")}</div>
+<div class="row" style="margin-top:8px"><label style="flex:0 1 200px">TA habitual (valores)<input id="a_tah" value="${esc(a.tah)}" placeholder="120/80"></label></div>
+<p class="step">Dispositivos / implantes</p>
+<div class="yn" style="flex-wrap:wrap">${AIMP.map((x,i)=>`<label><input type="checkbox" id="ai_${i}" ${(a.imp||[]).includes(x)?"checked":""}>${x}</label>`).join("")}</div>
+<div class="row" style="margin-top:12px">
+<label>Médicos / medicación habitual, alérgicos y quirúrgicos<textarea id="a1">${esc(a.per)}</textarea></label>
+<label>Tóxicos (tabaco, alcohol, sustancias) e inmunizaciones<textarea id="a4">${esc(a.tox)}</textarea></label></div>
+<div class="row" style="margin-top:10px">
+<label>Fisiológicos (menarca, embarazos, alimentación, sueño, actividad física…)<textarea id="a5">${esc(a.fis)}</textarea></label>
+<label>Epidemiológicos (Chagas, HIV, transfusiones…)<textarea id="a6">${esc(a.epi)}</textarea></label></div>
+<div class="row" style="margin-top:10px">
+<label>Heredo-familiares<textarea id="a2">${esc(a.fam)}</textarea></label>
+<label>Sociales y ambientales (vivienda, ocupación, psicosociales)<textarea id="a7">${esc(a.soc)}</textarea></label></div>
+<label style="margin-top:10px">Relacionados con la enfermedad actual<textarea id="a3" placeholder="Ej: latigazo cervical con hernia C5-C6 posterolateral hace 10 años; sin cirugía, inmovilización 1 año">${esc(a.rel)}</textarea></label>
+<button class="btn g" style="margin-top:10px" onclick="saveAnt()">Guardar antecedentes</button></details>
+<details class="card"><summary>Anamnesis por sistemas</summary><p class="mut" style="margin-top:0">Hallazgo breve por sistema (dejar vacío si no refiere).</p>
+<div class="row">${ANAM.map((s,i)=>`<label style="flex-basis:200px">${s}<input id="an_${i}" value="${esc((a.anam||[])[i]||"")}"></label>`).join("")}</div>
+<button class="btn g" style="margin-top:10px" onclick="saveAnam()">Guardar anamnesis</button></details>
 <details class="card" open><summary>Estudios previos (${estCount(p.id)})</summary>${estBlock(p.id)}</details>
 <details class="card"><summary>Nueva consulta</summary>
 <label>Motivo de consulta<textarea id="c_mo"></textarea></label>
-<label style="margin-top:10px">Evolución<textarea id="c_evo"></textarea></label>
-<label style="margin-top:10px">Examen físico<textarea id="c_ex"></textarea></label>
+<label style="margin-top:10px">Evolución / antecedentes de la enfermedad actual<textarea id="c_evo"></textarea></label>
+<h3>Examen físico general</h3><div class="row">${EXGE.map((l,i)=>`<label style="flex-basis:120px">${l}<input id="eg_${i}"></label>`).join("")}</div>
+<label style="margin-top:10px">Examen físico — hallazgos (piel, TCS, SOMA, otros)<textarea id="c_ex"></textarea></label>
 <h3>Signos vitales</h3><fieldset><legend>¿Se registran signos vitales?</legend>
 <label class="rad"><input type="radio" name="vsi" value="si" onchange="vsiT()">Sí</label>
 <label class="rad"><input type="radio" name="vsi" value="no" checked onchange="vsiT()">No</label></fieldset>
-<div class="row" id="vsi_box" hidden style="margin-top:10px">${VIT.map(k=>`<label style="flex-basis:130px">${k[1]}<input id="v_${k[0]}"></label>`).join("")}</div>
-<label style="margin-top:10px">Estudios complementarios<textarea id="c_ec" placeholder="Estudios que trae el paciente de afuera: ecografías, laboratorio, radiografías…"></textarea></label>
+<div class="row" id="vsi_box" hidden style="margin-top:10px">${VIT.map(k=>`<label style="flex-basis:120px">${k[1]}<input id="v_${k[0]}"></label>`).join("")}</div>
+<details style="margin-top:10px"><summary style="font-size:13px">Examen físico segmentario (opcional)</summary><div class="row" style="margin-top:8px">${EXSEG.map((l,i)=>`<label style="flex-basis:180px">${l}<input id="es_${i}"></label>`).join("")}</div></details>
+<label style="margin-top:10px">Métodos complementarios solicitados<textarea id="c_ec" placeholder="Estudios que solicita o que trae el paciente de afuera: ecografías, laboratorio, radiografías…"></textarea></label>
 <h3>Diagnóstico principal</h3><div class="row"><label>Tipo de Dx<select id="c_tdx"><option>Presuntivo</option><option>Definitivo</option></select></label>
 <label style="flex:0 1 120px">CIE-10<input id="c_cie" placeholder="M50.1"></label><label style="flex-basis:220px">Descripción (CIE-10)<input id="c_dd"></label></div>
 <label style="margin-top:10px">Si no está en el CIE-10, escribilo acá<textarea id="c_dxl" placeholder="Ej: Síndrome miofascial / Pubalgia / Síndrome facetario / Síndrome de columna fallida"></textarea></label>
-<label style="margin-top:10px">Otros diagnósticos<textarea id="c_ot"></textarea></label>
-<label style="margin-top:10px">Problemas activos y plan de seguimiento<textarea id="c_pl"></textarea></label>
-<label style="margin-top:10px">Tratamiento farmacológico e indicaciones<textarea id="c_tt"></textarea></label>
+<label style="margin-top:10px">Otros diagnósticos / listado de diagnósticos<textarea id="c_ot"></textarea></label>
+<label style="margin-top:10px">Listado de problemas activos y plan de seguimiento<textarea id="c_pl"></textarea></label>
+<label style="margin-top:10px">Tratamiento inicial / farmacológico e indicaciones<textarea id="c_tt"></textarea></label>
+<label style="margin-top:10px">Epicrisis (resumen, opcional)<textarea id="c_epi"></textarea></label>
 <label style="margin-top:10px">Próxima cita<input id="c_px" placeholder="Ej: Control en 30 días, o una fecha"></label>
 <p class="err" id="err"></p><button class="btn" onclick="addCons()">Guardar consulta</button></details>
 <details class="card"><summary>Certificados médicos</summary><div class="row">
@@ -604,9 +648,14 @@ ${consList(p.id)}</details>
 ${recList(p.id)}</details>
 <div class="card"><h3 style="margin-top:0">Consultas anteriores</h3>${ev.length?ev.map(evoHtml).join(""):'<div class="empty">Sin consultas registradas.</div>'}</div>`}
 function evoHtml(e){const vi=VIT.filter(k=>e.vit&&e.vit[k[0]]).map(k=>`${k[1].split(" (")[0]}: ${esc(e.vit[k[0]])}`),pe=e.vit&&+e.vit.pe,tl=e.vit&&+e.vit.tl;if(pe&&tl)vi.push("IMC: "+(pe/(tl*tl)).toFixed(1));
-return `<div class="evo"><small>${fdate(e.f)}</small> <b>${esc(e.mo)}</b>${e.evo?`<br><b>Evolución:</b> ${esc(e.evo)}`:""}${e.ex?`<br><b>Examen físico:</b> ${esc(e.ex)}`:""}${vi.length?`<br><b>Signos vitales:</b> ${vi.join(" · ")}`:""}${e.ec?`<br><b>Estudios complementarios:</b> ${esc(e.ec)}`:""}
-<br><b>Dx principal (${esc(e.tdx)}):</b> ${e.cie?esc(e.cie)+" — ":""}${esc(e.dd)}${e.dxl?`<br><b>Dx (sin CIE-10):</b> ${esc(e.dxl)}`:""}${e.ot?`<br><b>Otros diagnósticos:</b> ${esc(e.ot)}`:""}${e.pl?`<br><b>Problemas activos y plan:</b> ${esc(e.pl)}`:""}${e.tt?`<br><b>Tratamiento:</b> ${esc(e.tt).replace(/\n/g,"<br>")}`:""}${e.px?`<br><b>Próxima cita:</b> ${esc(e.px)}`:""}</div>`}
-function saveAnt(){const p=pac(selPac);p.ant={per:v("a1"),fam:v("a2"),rel:v("a3")};save();draw()}
+const egT=EXGE.map((l,i)=>(e.eg||[])[i]?`${l}: ${esc(e.eg[i])}`:"").filter(Boolean).join(" · "),
+esT=EXSEG.map((l,i)=>(e.es||[])[i]?`${l}: ${esc(e.es[i])}`:"").filter(Boolean).join(" · ");
+return `<div class="evo"><small>${fdate(e.f)}</small> <b>${esc(e.mo)}</b>${e.evo?`<br><b>Evolución:</b> ${esc(e.evo)}`:""}${egT?`<br><b>Examen general:</b> ${egT}`:""}${e.ex?`<br><b>Examen físico:</b> ${esc(e.ex)}`:""}${esT?`<br><b>Examen segmentario:</b> ${esT}`:""}${vi.length?`<br><b>Signos vitales:</b> ${vi.join(" · ")}`:""}${e.ec?`<br><b>Métodos complementarios:</b> ${esc(e.ec)}`:""}
+<br><b>Dx principal (${esc(e.tdx)}):</b> ${e.cie?esc(e.cie)+" — ":""}${esc(e.dd)}${e.dxl?`<br><b>Dx (sin CIE-10):</b> ${esc(e.dxl)}`:""}${e.ot?`<br><b>Otros diagnósticos:</b> ${esc(e.ot)}`:""}${e.pl?`<br><b>Problemas activos y plan:</b> ${esc(e.pl)}`:""}${e.tt?`<br><b>Tratamiento:</b> ${esc(e.tt).replace(/\n/g,"<br>")}`:""}${e.epi?`<br><b>Epicrisis:</b> ${esc(e.epi)}`:""}${e.px?`<br><b>Próxima cita:</b> ${esc(e.px)}`:""}</div>`}
+function saveAnt(){const p=pac(selPac),a=p.ant||{};
+p.ant={...a,per:v("a1"),fam:v("a2"),rel:v("a3"),tox:v("a4"),fis:v("a5"),epi:v("a6"),soc:v("a7"),tah:v("a_tah"),
+pat:APAT.filter((x,i)=>document.getElementById("ap_"+i).checked),imp:AIMP.filter((x,i)=>document.getElementById("ai_"+i).checked)};save();draw()}
+function saveAnam(){const p=pac(selPac),a=p.ant||{};p.ant={...a,anam:ANAM.map((s,i)=>v("an_"+i))};save();draw()}
 function ceT(){$("ce_dl").hidden=v("ce_tp")!="Reposo laboral"}
 function certBody(c,p){const n=nom(p),d=`${esc(p.td)} ${docFmt(p)}`;
 if(c.tipo=="Reposo laboral")return `Certifico que ${n} (${d}) se encuentra bajo mi atención médica y requiere reposo por ${c.dias||"—"} día(s) a partir de la fecha.${c.tx?" "+esc(c.tx):""}`;
@@ -623,7 +672,7 @@ function printCert(id){const c=S.cert.find(x=>x.id==id),p=pac(c.pid),dr=pro(c.pr
 w.document.write(`<!DOCTYPE html><html lang="es-AR"><head><meta charset="utf-8"><title>Certificado médico</title>
 <style>body{font-family:Georgia,serif;max-width:640px;margin:40px auto;color:#14293D;line-height:1.7}
 h1{font-size:20px;border-bottom:2px solid #14293D;padding-bottom:10px}.h{color:#5B6E80;font-size:13px}
-.b{margin:26px 0;font-size:16px}.f{margin-top:60px}.f div{border-top:1px solid #14293D;width:240px;padding-top:6px;font-size:13px}
+.b{margin:26px 0;font-size:16px}.f{margin-top:75px}.f div{border-top:1px solid #14293D;width:240px;padding-top:6px;font-size:13px}
 button{font:600 14px sans-serif;padding:8px 16px;margin-top:30px;cursor:pointer}</style></head><body>
 <h1>Facultativo · Certificado médico</h1><p class="h">${esc(c.tipo)} · ${fdate(c.f)}</p>
 <p class="b">${certBody(c,p)}</p><p>Se extiende el presente a pedido del interesado, para los fines que estime corresponder.</p>
@@ -746,7 +795,7 @@ w.document.write(`<!DOCTYPE html><html lang="es-AR"><head><meta charset="utf-8">
 .docbody h4:first-child{margin-top:0}.docbody p{margin:0 0 10px}.docbody ul{margin:2px 0 10px 18px;padding:0}.docbody li{margin:3px 0}
 .docsig{border-top:2px solid #152B40;margin-top:22px;padding-top:14px;font-size:13.5px}
 .chip{display:inline-block;background:#E4F1FB;color:#2678B8;border-radius:99px;padding:3px 11px;font-size:12.5px;font-weight:700}
-.sigrow{display:flex;gap:30px;margin-top:22px}.sigrow div{flex:1;border-top:1px solid #152B40;padding-top:6px;font-size:12.5px;color:#63798C}
+.sigrow{display:flex;gap:30px;margin-top:70px}.sigrow div{flex:1;border-top:1px solid #152B40;padding-top:6px;font-size:12.5px;color:#63798C}
 button{font:600 14px sans-serif;padding:10px 18px;margin-top:24px;cursor:pointer;background:#2678B8;color:#fff;border:0;border-radius:7px}
 @media print{button{display:none}}</style></head><body>${body}
 <button onclick="window.print()">Imprimir / Guardar como PDF</button></body></html>`);w.document.close()}
@@ -773,7 +822,7 @@ const copia=(marca)=>`<div style="page-break-after:always;position:relative">${m
 w.document.write(`<!DOCTYPE html><html lang="es-AR"><head><meta charset="utf-8"><title>Receta electrónica</title>
 <style>body{font-family:Georgia,serif;max-width:640px;margin:40px auto;color:#14293D;line-height:1.7}
 h1{font-size:20px;border-bottom:2px solid #14293D;padding-bottom:10px}.h{color:#5B6E80;font-size:13px}
-.b{margin:22px 0;font-size:16px}.f{margin-top:50px}.f div{border-top:1px solid #14293D;width:260px;padding-top:6px;font-size:13px}
+.b{margin:22px 0;font-size:16px}.f{margin-top:75px}.f div{border-top:1px solid #14293D;width:260px;padding-top:6px;font-size:13px}
 .cod{font-family:monospace;background:#F3F7FA;padding:4px 8px;border-radius:4px}
 .warn{font-size:12px;color:#8A6416;margin-top:30px}button{font:600 14px sans-serif;padding:8px 16px;margin-top:20px;cursor:pointer}</style></head><body>
 ${copia(false)}${c.cop=="Duplicada"?copia(true):""}
@@ -799,7 +848,8 @@ function delTier(i){S.tiers.splice(i,1);save();draw()}
 function vsiT(){$("vsi_box").hidden=r("vsi")!="si"}
 function addCons(){if(!v("c_mo")&&!v("c_dd")&&!v("c_dxl"))return err("Completá al menos el motivo o el diagnóstico.");
 const vit={};if(r("vsi")=="si")VIT.forEach(k=>vit[k[0]]=v("v_"+k[0]));
-S.evo.push({id:S.n++,pid:+selPac,f:iso(new Date()),mo:v("c_mo")||"Consulta",evo:v("c_evo"),ex:v("c_ex"),vit,ec:v("c_ec"),cie:v("c_cie"),dd:v("c_dd"),tdx:v("c_tdx"),dxl:v("c_dxl"),ot:v("c_ot"),pl:v("c_pl"),tt:v("c_tt"),px:v("c_px")});save();draw()}
+const eg=EXGE.map((l,i)=>v("eg_"+i)),es=EXSEG.map((l,i)=>v("es_"+i));
+S.evo.push({id:S.n++,pid:+selPac,f:iso(new Date()),mo:v("c_mo")||"Consulta",evo:v("c_evo"),ex:v("c_ex"),eg,es,vit,ec:v("c_ec"),cie:v("c_cie"),dd:v("c_dd"),tdx:v("c_tdx"),dxl:v("c_dxl"),ot:v("c_ot"),pl:v("c_pl"),tt:v("c_tt"),epi:v("c_epi"),px:v("c_px")});save();draw()}
 function vCob(){const q=cf.toLowerCase(),l=ALL().filter(c=>!q||`${c.n} ${c.s} ${c.r}`.toLowerCase().includes(q)),pid=ses.proId;
 return `<h2>Coberturas y mis valores de consulta</h2><div class="card"><div class="row"><label>Nombre<input id="cn"></label><label>Código RNOS (opcional)<input id="cr" placeholder="1-2570-7"></label><button class="btn" onclick="addCob()">Agregar cobertura</button></div><p class="err" id="err"></p><small class="mut">Si un seguro nuevo no figura en la base, agregalo acá.</small></div>
 <div class="card"><label>Buscar por nombre, sigla o RNOS<input id="cq" value="${esc(cf)}" oninput="cf=this.value;draw();const i=$('cq');i.focus();i.setSelectionRange(99,99)"></label></div>
