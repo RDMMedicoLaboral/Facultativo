@@ -585,7 +585,8 @@ ${certList(p.id)}</details>
 <details class="card"><summary>Consentimientos informados</summary><div class="row">
 <label style="flex-basis:260px">Tipo<select id="co_tp" onchange="ctplPick()">${TCONS.map(t=>`<option>${t}</option>`).join("")}${S.consTpl.map(t=>`<option value="tpl:${t.id}">📋 ${esc(t.nombre)}</option>`).join("")}</select></label>
 <label style="flex-basis:220px">Profesional que informa<select id="co_pr">${proOpts()}</select></label></div>
-<label style="margin-top:10px">Detalle (procedimiento, riesgos, alternativas)<textarea id="co_tx" placeholder="Describí el procedimiento o tratamiento, sus riesgos y alternativas"></textarea></label>
+<label style="margin-top:10px">Motivo / diagnóstico a tratar<input id="co_mo" placeholder="Ej: Lumbalgia crónica con componente neuropático"></label>
+<label style="margin-top:10px">Detalle (procedimiento, riesgos, alternativas)<textarea id="co_tx" placeholder="Describí el procedimiento o tratamiento, sus riesgos y alternativas" style="min-height:120px"></textarea></label>
 <label class="rad" style="margin-top:10px"><input type="checkbox" id="co_ck">El/la paciente fue informado/a y acepta</label>
 <label style="margin-top:8px">Firma del paciente (nombre y apellido)<input id="co_fi" placeholder="${nom(p).replace(/<[^>]+>/g,"")}"></label>
 <p class="err" id="err4"></p><button class="btn g" style="margin-top:8px" onclick="addCons_(${p.id})">Guardar consentimiento</button>
@@ -712,11 +713,28 @@ function vConsTpl(){return `<h2>Consentimientos</h2><p class="mut">Biblioteca de
 function addConsTpl(){if(!v("ct_no")||!v("ct_cu"))return err("Completá el nombre y el texto de la plantilla.");S.consTpl.push({id:S.n++,nombre:v("ct_no"),cuerpo:v("ct_cu")});save();draw()}
 function delConsTpl(id){S.consTpl=S.consTpl.filter(t=>t.id!=id);save();draw()}
 function consList(pid){const l=S.cons.filter(c=>c.pid==pid).sort((a,b)=>a.f<b.f?1:-1),p=pac(pid);
-return l.length?l.map(c=>`<details style="margin-bottom:12px"><summary>${esc(c.tipo)} · ${fdate(c.f)}</summary><div style="margin-top:12px">${consDocFrame(c.tipo,c.tx,{paciente:`${p.ap}, ${p.no}`,profesional:nomPro(pro(c.prid)).replace(/^Dr\.\/Dra\. /,""),motivo:c.tipo,firma:c.firma,fecha:c.f})}</div></details>`).join(""):'<div class="empty">Sin consentimientos registrados.</div>'}
+return l.length?l.map(c=>`<details style="margin-bottom:12px"><summary>${esc(c.tipo)} · ${fdate(c.f)}</summary><div style="margin-top:12px">${consDocFrame(c.tipo,c.tx,{paciente:`${p.ap}, ${p.no}`,profesional:nomPro(pro(c.prid)).replace(/^Dr\.\/Dra\. /,""),motivo:c.mo,firma:c.firma,fecha:c.f})}</div><button class="btn g" style="margin-top:10px" onclick="printCons(${c.id})">🖨️ Imprimir / Exportar PDF</button></details>`).join(""):'<div class="empty">Sin consentimientos registrados.</div>'}
+function printCons(id){const c=S.cons.find(x=>x.id==id),p=pac(c.pid),w=window.open("","_blank");
+const body=consDocFrame(c.tipo,c.tx,{paciente:`${p.ap}, ${p.no}`,profesional:nomPro(pro(c.prid)).replace(/^Dr\.\/Dra\. /,""),motivo:c.mo,firma:c.firma,fecha:c.f});
+w.document.write(`<!DOCTYPE html><html lang="es-AR"><head><meta charset="utf-8"><title>${esc(c.tipo)}</title>
+<style>body{font-family:Figtree,Arial,sans-serif;max-width:720px;margin:30px auto;color:#152B40;line-height:1.6;padding:0 16px}
+.formhdr{background:#1A4F7A;color:#fff;padding:16px 18px;border-radius:10px 10px 0 0;margin-bottom:18px}
+.formhdr b{font:700 20px Georgia,serif;display:block}.formhdr span{opacity:.85;font-size:13px}
+.docbox{border:1px solid #152B40;border-radius:8px;padding:14px 16px;margin-bottom:18px;font-size:14px;line-height:2.1}
+.docbody{font-size:13.5px;line-height:1.6;column-count:2;column-gap:28px}
+.docbody h4{color:#2678B8;font:700 12.5px sans-serif;text-transform:uppercase;letter-spacing:.03em;margin:14px 0 4px;break-after:avoid}
+.docbody h4:first-child{margin-top:0}.docbody p{margin:0 0 10px}.docbody ul{margin:2px 0 10px 18px;padding:0}.docbody li{margin:3px 0}
+.docsig{border-top:2px solid #152B40;margin-top:22px;padding-top:14px;font-size:13.5px}
+.chip{display:inline-block;background:#E4F1FB;color:#2678B8;border-radius:99px;padding:3px 11px;font-size:12.5px;font-weight:700}
+.sigrow{display:flex;gap:30px;margin-top:22px}.sigrow div{flex:1;border-top:1px solid #152B40;padding-top:6px;font-size:12.5px;color:#63798C}
+button{font:600 14px sans-serif;padding:10px 18px;margin-top:24px;cursor:pointer;background:#2678B8;color:#fff;border:0;border-radius:7px}
+@media print{button{display:none}}</style></head><body>${body}
+<button onclick="window.print()">Imprimir / Guardar como PDF</button></body></html>`);w.document.close()}
 function addCons_(pid){if(!v("co_tx"))return $("err4").textContent="Describí el procedimiento o tratamiento.";
 if(!$("co_ck").checked)return $("err4").textContent="Marcá que el paciente fue informado y acepta.";
 if(!v("co_fi"))return $("err4").textContent="Falta la firma (nombre y apellido) del paciente.";
-S.cons.push({id:S.n++,pid,prid:+v("co_pr"),f:iso(new Date()),tipo:v("co_tp"),tx:v("co_tx"),firma:v("co_fi")});save();draw()}
+const tpv=v("co_tp"),tplSel=tpv.startsWith("tpl:")?S.consTpl.find(x=>x.id==+tpv.slice(4)):null;
+S.cons.push({id:S.n++,pid,prid:+v("co_pr"),f:iso(new Date()),tipo:tplSel?tplSel.nombre:tpv,mo:v("co_mo"),tx:v("co_tx"),firma:v("co_fi")});save();draw()}
 function recList(pid){const l=S.rec.filter(c=>c.pid==pid).sort((a,b)=>a.f<b.f?1:-1);
 return l.length?l.map(c=>`<div class="evo"><small>${fdate(c.f)} · ${esc(nomPro(pro(c.prid)))} · ${esc(matr(pro(c.prid)))}</small><br><b>${esc(c.me)}</b> — ${esc(c.ca)}<br>${esc(c.do)}${c.in?`<br>${esc(c.in)}`:""}<br><span class="chip sol">Código ${c.cod}</span> <span class="chip">${esc(c.cop)}</span> <button class="link" style="margin-left:8px" onclick="printRec(${c.id})">Imprimir</button></div>`).join(""):'<div class="empty">Sin recetas emitidas.</div>'}
 function addRec(pid){if(!v("rc_me")||!v("rc_ca")||!v("rc_do"))return $("err5").textContent="Completá medicamento, cantidad y dosis.";
