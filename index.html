@@ -709,14 +709,13 @@ function vConsTpl(){return `<h2>Consentimientos</h2><p class="mut">Biblioteca de
 <details class="card"><summary>Nueva plantilla</summary><label>Nombre<input id="ct_no" placeholder="Ej: Infiltración de hombro"></label>
 <label style="margin-top:10px">Texto del consentimiento (## subtítulo, - viñeta)<textarea id="ct_cu" style="min-height:160px"></textarea></label>
 <p class="err" id="err"></p><button class="btn" style="margin-top:8px" onclick="addConsTpl()">Guardar plantilla</button></details>
-<div class="card">${S.consTpl.map(t=>`<details style="margin-bottom:14px"><summary>📋 ${esc(t.nombre)}</summary><div style="margin-top:12px">${consDocFrame(t.nombre,t.cuerpo,null)}</div><button class="link" style="margin-top:8px" onclick="delConsTpl(${t.id})">Eliminar plantilla</button></details>`).join("")||'<div class="empty">Todavía no hay plantillas.</div>'}</div>`}
+<div class="card">${S.consTpl.map(t=>`<details style="margin-bottom:14px"><summary>📋 ${esc(t.nombre)}</summary><div style="margin-top:12px">${consDocFrame(t.nombre,t.cuerpo,null)}</div><div class="row" style="margin-top:10px"><button class="btn g" onclick="printConsTpl(${t.id})">🖨️ Imprimir plantilla en blanco</button><button class="link" onclick="delConsTpl(${t.id})">Eliminar plantilla</button></div></details>`).join("")||'<div class="empty">Todavía no hay plantillas.</div>'}</div>`}
 function addConsTpl(){if(!v("ct_no")||!v("ct_cu"))return err("Completá el nombre y el texto de la plantilla.");S.consTpl.push({id:S.n++,nombre:v("ct_no"),cuerpo:v("ct_cu")});save();draw()}
 function delConsTpl(id){S.consTpl=S.consTpl.filter(t=>t.id!=id);save();draw()}
 function consList(pid){const l=S.cons.filter(c=>c.pid==pid).sort((a,b)=>a.f<b.f?1:-1),p=pac(pid);
 return l.length?l.map(c=>`<details style="margin-bottom:12px"><summary>${esc(c.tipo)} · ${fdate(c.f)}</summary><div style="margin-top:12px">${consDocFrame(c.tipo,c.tx,{paciente:`${p.ap}, ${p.no}`,profesional:nomPro(pro(c.prid)).replace(/^Dr\.\/Dra\. /,""),motivo:c.mo,firma:c.firma,fecha:c.f})}</div><button class="btn g" style="margin-top:10px" onclick="printCons(${c.id})">🖨️ Imprimir / Exportar PDF</button></details>`).join(""):'<div class="empty">Sin consentimientos registrados.</div>'}
-function printCons(id){const c=S.cons.find(x=>x.id==id),p=pac(c.pid),w=window.open("","_blank");
-const body=consDocFrame(c.tipo,c.tx,{paciente:`${p.ap}, ${p.no}`,profesional:nomPro(pro(c.prid)).replace(/^Dr\.\/Dra\. /,""),motivo:c.mo,firma:c.firma,fecha:c.f});
-w.document.write(`<!DOCTYPE html><html lang="es-AR"><head><meta charset="utf-8"><title>${esc(c.tipo)}</title>
+function printDoc(titulo,body){const w=window.open("","_blank");
+w.document.write(`<!DOCTYPE html><html lang="es-AR"><head><meta charset="utf-8"><title>${esc(titulo)}</title>
 <style>body{font-family:Figtree,Arial,sans-serif;max-width:720px;margin:30px auto;color:#152B40;line-height:1.6;padding:0 16px}
 .formhdr{background:#1A4F7A;color:#fff;padding:16px 18px;border-radius:10px 10px 0 0;margin-bottom:18px}
 .formhdr b{font:700 20px Georgia,serif;display:block}.formhdr span{opacity:.85;font-size:13px}
@@ -730,6 +729,9 @@ w.document.write(`<!DOCTYPE html><html lang="es-AR"><head><meta charset="utf-8">
 button{font:600 14px sans-serif;padding:10px 18px;margin-top:24px;cursor:pointer;background:#2678B8;color:#fff;border:0;border-radius:7px}
 @media print{button{display:none}}</style></head><body>${body}
 <button onclick="window.print()">Imprimir / Guardar como PDF</button></body></html>`);w.document.close()}
+function printCons(id){const c=S.cons.find(x=>x.id==id),p=pac(c.pid);
+printDoc(c.tipo,consDocFrame(c.tipo,c.tx,{paciente:`${p.ap}, ${p.no}`,profesional:nomPro(pro(c.prid)).replace(/^Dr\.\/Dra\. /,""),motivo:c.mo,firma:c.firma,fecha:c.f}))}
+function printConsTpl(id){const t=S.consTpl.find(x=>x.id==id);printDoc(t.nombre,consDocFrame(t.nombre,t.cuerpo,null))}
 function addCons_(pid){if(!v("co_tx"))return $("err4").textContent="Describí el procedimiento o tratamiento.";
 if(!$("co_ck").checked)return $("err4").textContent="Marcá que el paciente fue informado y acepta.";
 if(!v("co_fi"))return $("err4").textContent="Falta la firma (nombre y apellido) del paciente.";
