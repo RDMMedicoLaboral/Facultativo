@@ -16,7 +16,7 @@ header{background:linear-gradient(155deg,#152B40,#1E3A55);color:#fff;padding:20p
 .brand{display:flex;align-items:baseline;gap:12px;max-width:980px;margin:0 auto}
 h1{font:700 28px/1 Fraunces,Georgia,serif;margin:0;letter-spacing:-.01em;color:#fff}
 .brand span{color:#9FB6CB;font-size:13px;letter-spacing:.02em}
-nav{display:flex;gap:2px;max-width:980px;margin:16px auto 0;overflow-x:auto;scrollbar-width:none}
+nav{display:flex;flex-wrap:wrap;row-gap:2px;gap:2px;max-width:980px;margin:16px auto 0}
 nav::-webkit-scrollbar{display:none}
 nav button{background:none;border:0;color:#9FB6CB;font:500 14.5px Figtree,sans-serif;padding:10px 14px 12px;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;transition:color .15s}
 nav button:hover{color:#fff}
@@ -599,7 +599,7 @@ return `<h2>Historia clínica</h2><div class="card"><label>Paciente<select oncha
 <div class="row">${ANAM.map((s,i)=>`<label style="flex-basis:200px">${s}<input id="an_${i}" value="${esc((a.anam||[])[i]||"")}"></label>`).join("")}</div>
 <button class="btn g" style="margin-top:10px" onclick="saveAnam()">Guardar anamnesis</button></details>
 <details class="card" open><summary>Estudios previos (${estCount(p.id)})</summary>${estBlock(p.id)}</details>
-<details class="card"><summary>Nueva consulta</summary>
+<div class="card"><h3 style="margin-top:0">Nueva consulta</h3>
 <label>Motivo de consulta<textarea id="c_mo"></textarea></label>
 <label style="margin-top:10px">Evolución / antecedentes de la enfermedad actual<textarea id="c_evo"></textarea></label>
 <h3>Examen físico general</h3><div class="row">${EXGE.map((l,i)=>`<label style="flex-basis:120px">${l}<input id="eg_${i}"></label>`).join("")}</div>
@@ -618,7 +618,7 @@ return `<h2>Historia clínica</h2><div class="card"><label>Paciente<select oncha
 <label style="margin-top:10px">Tratamiento inicial / farmacológico e indicaciones<textarea id="c_tt"></textarea></label>
 <label style="margin-top:10px">Epicrisis (resumen, opcional)<textarea id="c_epi"></textarea></label>
 <label style="margin-top:10px">Próxima cita<input id="c_px" placeholder="Ej: Control en 30 días, o una fecha"></label>
-<p class="err" id="err"></p><button class="btn" onclick="addCons()">Guardar consulta</button></details>
+<p class="err" id="err"></p><button class="btn" onclick="addCons()">Guardar consulta</button></div>
 <details class="card"><summary>Certificados médicos</summary><div class="row">
 <label style="flex-basis:220px">Tipo<select id="ce_tp" onchange="ceT()">${CERT.map(t=>`<option>${t}</option>`).join("")}</select></label>
 <label id="ce_dl" style="flex-basis:110px">Días de reposo<input id="ce_di" type="number" min="1" value="3"></label>
