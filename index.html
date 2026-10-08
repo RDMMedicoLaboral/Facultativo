@@ -586,7 +586,7 @@ ${certList(p.id)}</details>
 <label style="flex-basis:260px">Tipo<select id="co_tp" onchange="ctplPick()">${TCONS.map(t=>`<option>${t}</option>`).join("")}${S.consTpl.map(t=>`<option value="tpl:${t.id}">📋 ${esc(t.nombre)}</option>`).join("")}</select></label>
 <label style="flex-basis:220px">Profesional que informa<select id="co_pr">${proOpts()}</select></label></div>
 <label style="margin-top:10px">Motivo / diagnóstico a tratar<input id="co_mo" placeholder="Ej: Lumbalgia crónica con componente neuropático"></label>
-<label style="margin-top:10px">Detalle (procedimiento, riesgos, alternativas)<textarea id="co_tx" placeholder="Describí el procedimiento o tratamiento, sus riesgos y alternativas" style="min-height:120px"></textarea></label>
+<label style="margin-top:10px">Detalle (procedimiento, riesgos, alternativas) — opcional: ## Subtítulo y - viñeta para darle formato<textarea id="co_tx" placeholder="Ej:&#10;## Riesgos&#10;- Molestia en el sitio&#10;- Mareo pasajero" style="min-height:120px"></textarea></label>
 <label class="rad" style="margin-top:10px"><input type="checkbox" id="co_ck">El/la paciente fue informado/a y acepta</label>
 <label style="margin-top:8px">Firma del paciente (nombre y apellido)<input id="co_fi" placeholder="${nom(p).replace(/<[^>]+>/g,"")}"></label>
 <p class="err" id="err4"></p><button class="btn g" style="margin-top:8px" onclick="addCons_(${p.id})">Guardar consentimiento</button>
@@ -699,17 +699,33 @@ if(l.startsWith("## ")){if(ul){h+="</ul>";ul=false}h+=`<h4>${esc(l.slice(3))}</h
 else if(l.startsWith("- ")){if(!ul){h+="<ul>";ul=true}h+=`<li>${esc(l.slice(2))}</li>`}
 else{if(ul){h+="</ul>";ul=false}h+=`<p>${esc(l)}</p>`}}
 if(ul)h+="</ul>";return h}
-function consDocFrame(titulo,cuerpo,fill){const pac_=fill?esc(fill.paciente):"_______________________________",prov=fill?esc(fill.profesional):"_______________________________",mot=fill?esc(fill.motivo||"—"):"________________________________________________";
+function consDocFrame(titulo,cuerpo,fill){fill=fill||{};
+const pac_=fill.paciente?esc(fill.paciente):"_______________________________",prov=fill.profesional?esc(fill.profesional):"_______________________________",mot=fill.motivo?esc(fill.motivo):"________________________________________________";
 return `<div class="formhdr"><b>Consentimiento informado</b><span>${esc(titulo)}</span></div>
 <div class="docbox">Yo, <b>${pac_}</b> (paciente), y <b>${prov}</b> (profesional), hemos acordado el tratamiento o procedimiento descripto a continuación.<br>Motivo: <b>${mot}</b></div>
-<div class="docbody">${mdToHtml(cuerpo)}</div>
-<div class="docsig"><p>Entiendo este formulario. He podido hacer preguntas, las cuales me fueron respondidas. Se me ha ofrecido una copia. ${fill?"Doy mi consentimiento para lo descripto arriba.":""}</p>
-${fill?`<p style="margin-top:10px"><span class="chip">Firmado por ${esc(fill.firma)} el ${fdate(fill.fecha)}</span></p>`:`<div class="sigrow"><div>Firma del paciente</div><div>Firma del profesional</div><div>Fecha</div></div>`}</div>`}
-function vConsTpl(){return `<h2>Consentimientos</h2><p class="mut">Biblioteca de plantillas de consentimiento informado. Usá ## antes de un subtítulo y - antes de una viñeta para darle formato. Al generar un consentimiento para un paciente (desde su historia clínica), elegís una de estas y se precarga el texto para ajustarlo caso por caso.</p>
-<details class="card"><summary>Nueva plantilla</summary><label>Nombre<input id="ct_no" placeholder="Ej: Infiltración de hombro"></label>
+<div class="docbody">${mdToHtml(/^##\s/m.test(cuerpo||"")?cuerpo:"## Detalle\n"+(cuerpo||"(sin detalle)"))}</div>
+<div class="docsig"><p>Entiendo este formulario. He podido hacer preguntas, las cuales me fueron respondidas. Se me ha ofrecido una copia. ${fill.firma?"Doy mi consentimiento para lo descripto arriba.":""}</p>
+${fill.firma?`<p style="margin-top:10px"><span class="chip">Firmado por ${esc(fill.firma)} el ${fdate(fill.fecha)}</span></p>`:`<div class="sigrow"><div>Firma del paciente</div><div>Firma del profesional</div><div>Fecha</div></div>`}</div>`}
+function vConsTpl(){const base=misPac();
+if(!base.length)return `<h2>Consentimientos</h2><div class="card empty">Primero necesitás un paciente con turno asignado para poder completar un consentimiento. Mientras tanto podés armar plantillas igual.</div>${ctplEditor()}`;
+if(!base.some(x=>x.id==selPac))selPac=base[0].id;const p=pac(selPac);
+return `<h2>Consentimientos</h2><p class="mut">Elegí el paciente que estás valorando: cada plantilla se completa sola con su nombre y el tuyo.</p>
+<div class="card"><label>Paciente<select onchange="selPac=this.value;draw()">${pacOpts(selPac,base)}</select></label></div>
+${ctplEditor()}
+<div class="card">${S.consTpl.map(t=>{const id=t.id;return `<details style="margin-bottom:14px"><summary>📋 ${esc(t.nombre)}</summary><div style="margin-top:12px">${consDocFrame(t.nombre,t.cuerpo,{paciente:`${p.ap}, ${p.no}`,profesional:nomPro(pro(ses.proId)).replace(/^Dr\.\/Dra\. /,""),motivo:S["ctpmo"+id]})}</div>
+<div class="row" style="margin-top:10px"><label style="flex-basis:260px">Motivo / diagnóstico a tratar<input id="ctp_mo_${id}" value="${esc(S["ctpmo"+id]||"")}" onchange="S['ctpmo${id}']=this.value;draw()"></label>
+<label style="flex-basis:200px">Firma del paciente<input id="ctp_fi_${id}" placeholder="${esc(`${p.ap}, ${p.no}`)}"></label></div>
+<label class="rad" style="margin-top:8px"><input type="checkbox" id="ctp_ck_${id}">El/la paciente fue informado/a y acepta</label>
+<p class="err" id="ctperr_${id}"></p>
+<div class="row" style="margin-top:10px"><button class="btn" onclick="addConsFromTpl(${id})">Guardar consentimiento para ${esc(p.no)}</button><button class="btn g" onclick="printConsTpl(${id})">🖨️ Imprimir en blanco</button><button class="link" onclick="delConsTpl(${id})">Eliminar plantilla</button></div></details>`}).join("")||'<div class="empty">Todavía no hay plantillas.</div>'}</div>`}
+function ctplEditor(){return `<details class="card"><summary>Nueva plantilla</summary><label>Nombre<input id="ct_no" placeholder="Ej: Infiltración de hombro"></label>
 <label style="margin-top:10px">Texto del consentimiento (## subtítulo, - viñeta)<textarea id="ct_cu" style="min-height:160px"></textarea></label>
-<p class="err" id="err"></p><button class="btn" style="margin-top:8px" onclick="addConsTpl()">Guardar plantilla</button></details>
-<div class="card">${S.consTpl.map(t=>`<details style="margin-bottom:14px"><summary>📋 ${esc(t.nombre)}</summary><div style="margin-top:12px">${consDocFrame(t.nombre,t.cuerpo,null)}</div><div class="row" style="margin-top:10px"><button class="btn g" onclick="printConsTpl(${t.id})">🖨️ Imprimir plantilla en blanco</button><button class="link" onclick="delConsTpl(${t.id})">Eliminar plantilla</button></div></details>`).join("")||'<div class="empty">Todavía no hay plantillas.</div>'}</div>`}
+<p class="err" id="err"></p><button class="btn" style="margin-top:8px" onclick="addConsTpl()">Guardar plantilla</button></details>`}
+function addConsFromTpl(id){const t=S.consTpl.find(x=>x.id==id),mo=document.getElementById("ctp_mo_"+id).value,fi=document.getElementById("ctp_fi_"+id).value,ck=document.getElementById("ctp_ck_"+id).checked;
+const e=m=>$("ctperr_"+id).textContent=m;
+if(!ck)return e("Marcá que el paciente fue informado y acepta.");
+if(!fi)return e("Falta la firma (nombre y apellido) del paciente.");
+S.cons.push({id:S.n++,pid:selPac,prid:ses.proId,f:iso(new Date()),tipo:t.nombre,mo,tx:t.cuerpo,firma:fi});save();draw()}
 function addConsTpl(){if(!v("ct_no")||!v("ct_cu"))return err("Completá el nombre y el texto de la plantilla.");S.consTpl.push({id:S.n++,nombre:v("ct_no"),cuerpo:v("ct_cu")});save();draw()}
 function delConsTpl(id){S.consTpl=S.consTpl.filter(t=>t.id!=id);save();draw()}
 function consList(pid){const l=S.cons.filter(c=>c.pid==pid).sort((a,b)=>a.f<b.f?1:-1),p=pac(pid);
