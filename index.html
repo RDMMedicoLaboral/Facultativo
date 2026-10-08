@@ -717,7 +717,9 @@ ${ctplEditor()}
 <label style="flex-basis:200px">Firma del paciente<input id="ctp_fi_${id}" placeholder="${esc(`${p.ap}, ${p.no}`)}"></label></div>
 <label class="rad" style="margin-top:8px"><input type="checkbox" id="ctp_ck_${id}">El/la paciente fue informado/a y acepta</label>
 <p class="err" id="ctperr_${id}"></p>
-<div class="row" style="margin-top:10px"><button class="btn" onclick="addConsFromTpl(${id})">Guardar consentimiento para ${esc(p.no)}</button><button class="btn g" onclick="printConsTpl(${id})">🖨️ Imprimir en blanco</button><button class="link" onclick="delConsTpl(${id})">Eliminar plantilla</button></div></details>`}).join("")||'<div class="empty">Todavía no hay plantillas.</div>'}</div>`}
+<div class="row" style="margin-top:10px"><button class="btn" onclick="addConsFromTpl(${id})">Guardar consentimiento para ${esc(p.no)}</button><button class="btn g" onclick="printConsLive(${id})">🖨️ Imprimir con estos datos</button><button class="btn g" onclick="printConsTpl(${id})">🖨️ Imprimir en blanco</button><button class="link" onclick="delConsTpl(${id})">Eliminar plantilla</button></div></details>`}).join("")||'<div class="empty">Todavía no hay plantillas.</div>'}</div>`}
+function printConsLive(id){const t=S.consTpl.find(x=>x.id==id),p=pac(selPac),mo=document.getElementById("ctp_mo_"+id).value,fi=document.getElementById("ctp_fi_"+id).value;
+printDoc(t.nombre,consDocFrame(t.nombre,t.cuerpo,{paciente:`${p.ap}, ${p.no}`,profesional:nomPro(pro(ses.proId)).replace(/^Dr\.\/Dra\. /,""),motivo:mo,firma:fi,fecha:iso(new Date())}))}
 function ctplEditor(){return `<details class="card"><summary>Nueva plantilla</summary><label>Nombre<input id="ct_no" placeholder="Ej: Infiltración de hombro"></label>
 <label style="margin-top:10px">Texto del consentimiento (## subtítulo, - viñeta)<textarea id="ct_cu" style="min-height:160px"></textarea></label>
 <p class="err" id="err"></p><button class="btn" style="margin-top:8px" onclick="addConsTpl()">Guardar plantilla</button></details>`}
